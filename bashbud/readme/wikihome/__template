@@ -1,0 +1,43 @@
+---
+target:   README.md
+markdown: true
+wrap:     60
+...
+# %%name%% - %%description%% 
+%%if readme_banner%%
+
+USAGE
+-----
+
+%%long_description%%
+
+%%fi%%
+%%if synopsis%%
+
+OPTIONS
+-------
+
+```text
+%%synopsis%%
+```
+
+%%for o in options%%
+
+%%printf '`--%s`' 'o'%%
+%%if o[short]%%
+%%printf '|`-%s`' 'o[short]'%%
+%%fi%%
+%%if o[arg]%%
+%%printf ' %s' 'o[arg]'%%
+%%else%%
+%%if o[optarg]%%
+%%printf ' [%s]' 'o[optarg]'%%
+%%fi%%
+%%fi%%
+%%printf '  \n'%%
+%%if o[description]%%
+%%o[description]%%
+%%fi%%
+%%done%%
+%%fi%%
+

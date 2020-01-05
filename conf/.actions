@@ -1,0 +1,5 @@
+print %u
+clipboard %u
+clipboard [%t]
+exec browser %u
+clipboard %t
