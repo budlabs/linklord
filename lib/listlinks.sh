@@ -1,8 +1,9 @@
 #!/bin/bash
 
 listlinks() {
-  local cur="$1" trg url choice title
-  local format="<span lang='%s'></span>%s\n"
+  local cur="$1" trg choice
+  local format="${_prefixlink}%s\n"
+  # local format="<span lang='%s'></span>%s\n"
 
   choice="$(
   {
@@ -17,10 +18,9 @@ listlinks() {
         find "$cur" "${_find_options[@]}" -type f -exec cat '{}' \;
       fi
       # format linklist and remove duplicates with awk
-    } | awk -v format="$format" -v _prefixlink="$_prefixlink" -F "[][]" '
+    } | awk -v format="$format" -F "[][]" '
           NF == 3 && !a[$2]++ {
-            url=gensub(/^:\s*/,"",1,$3)
-            printf(format, url, _prefixlink $2)
+            printf(format, $2)
           }
         '
 
@@ -30,16 +30,13 @@ listlinks() {
       find "$cur" "${_find_options[@]}" -type d -printf "${_prefixfolder}%f\n"
     }
 
-  } | menu --prompt "select url or tag: "  \
-           --options "-no-custom"          \
-           --layout A                      \
-           --fallback '--layout D --fallback "--layout C"'
+  } | "${_menu_browse[@]}"
   )"
 
   [[ -z $choice ]] && ERX nothing selected
 
   # test if choice has markup, if true, its a link
-  if [[ $choice =~ ^\< ]];then
+  if [[ $choice =~ ^${_prefixlink} ]];then
    linkaction "$choice"
   else
     # trim prefix, append trg to cur to get path

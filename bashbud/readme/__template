@@ -1,5 +1,5 @@
 ---
-target:   ___wikihome
+target:   README.md
 markdown: true
 wrap:     60
 ...
@@ -84,3 +84,4 @@ EXAMPLES
 
 **%%name%%** is licensed with the **%%license ^^%% license**
 %%fi%%
+

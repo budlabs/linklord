@@ -1,5 +1,2 @@
-print %u
-clipboard %u
-clipboard [%t]
+print %t - %u
 exec browser %u
-clipboard %t

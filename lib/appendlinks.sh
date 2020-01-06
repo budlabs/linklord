@@ -8,7 +8,7 @@ appendlinks() {
   rm -f "$_reportfile"
   linklist="$(getlinks "$trgpath")" 
 
-  [[ -f "$_reportfile" ]] && ERM "$(< "$_reportfile")"
+  [[ -f "$_reportfile" ]] && ERM "$(sort -u "$_reportfile")"
   
   [[ -n $linklist ]] && tdir="$(mktemp -d)" && (
     cd "$tdir" || ERX could not create temp dir

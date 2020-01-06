@@ -7,7 +7,7 @@ getlinks() {
   awk -v reportfile="$_reportfile" -v targetfile="$targetfile" -F "[][]" '
 
     # first line not yaml start
-    NR == 1 && FILENAME == targetfile && $0 !~ /^---$/ {dashcount=2}
+    FNR == 1 && FILENAME == targetfile && $0 !~ /^---$/ {dashcount=2}
     /^---$/     {dashcount++}
     /^```|~~~/ {codeblock++}
     
@@ -28,16 +28,17 @@ getlinks() {
 
         # dont include direct url []() or ref []:
         # dont bother with links not in the database
-        else if (($(i+1) ~ /^\s*[^(]/ || !$(i+1)) ) {
+        else if (($(i+1) ~ /^\s*[^(]/ || !$(i-1)) ) {
           # [][] - $(i+1) is nothing
           # NF-1 != i to not include block at end of line
           # ![] - image, previous block ends with !
           if (!(!$(i+1) && (NF-1) != i) && $(i-1) !~ /!$/)
+            name = gensub(/^.*[/]/,"",1,FILENAME)
             if ($i in links) {
-              printf("%-7s: %s\n", "ADDED", $i) > reportfile
+              printf("%s: %s: %s\n",name, "ADDED", $i) > reportfile
               found[$i]=links[$i]
             }  else {
-              printf("%-7s: %s\n", "NO URL", $i) > reportfile
+              printf("%s: %s: %s\n",name, "NO URL", $i) > reportfile
             }
         }
       }

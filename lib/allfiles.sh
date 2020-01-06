@@ -1,14 +1,18 @@
 #!/bin/bash
 
-
+# store path to all files in array '_files'
+# if it doesn't already exist
+# separet with null char -d ''
 allfiles() {
-  declare -ga _files
-  # store path to all files in array 'files'
-  # separet with null char -d ''
-  readarray -t -d '' _files < <(find "$LINKLORD_DIR" \
-                                     -mindepth 1     \
-                                     -not -name ".*" \
-                                     -type f         \
-                                     -print0         \
-                               )
+  [[ -z ${_files[0]} ]] && {
+    declare -ga _files
+    
+    readarray -t -d '' _files  \
+      < <(find "$LINKLORD_DIR" \
+               -mindepth 1     \
+               -not -name ".*" \
+               -type f         \
+               -print0         \
+         )
+  }        
 }

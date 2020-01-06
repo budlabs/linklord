@@ -10,19 +10,28 @@ aconfdirs=(
 mkdir -p "$1" "${aconfdirs[@]}"
 
 cat << 'EOCONF' > "$trgdir/.settings"
+#!/bin/bash
+
+_reportfile="$LINKLORD_DIR/.log"
+_actionfile="$LINKLORD_DIR/.actions"
+_historyfile="$LINKLORD_DIR/.history"
+_history_size=5
 _spliton="linklord was here"
-_illegaltitlechars="[]<'"
+_char_blacklist="[]<'"
 _prefixlink=" " 
 _prefixfile=" " 
 _prefixfolder=" "
+_menu_browse=(dmenu -p "select link: ")
+_menu_action=(dmenu -p "select action: ")
+_menu_add_title=(dmenu -p "title for url: ")
+_menu_add_category=(dmenu -p "store in category: ")
+
+# shellcheck disable=SC2034
 EOCONF
 
 cat << 'EOCONF' > "$trgdir/.actions"
-print %u
-clipboard %u
-clipboard [%t]
+print %t - %u
 exec browser %u
-clipboard %t
 EOCONF
 
 cat << 'EOCONF' > "$trgdir/budlabs"

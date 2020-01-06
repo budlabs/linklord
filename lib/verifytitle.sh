@@ -3,11 +3,11 @@
 verifytitle() {
   local title="$1" url="$2" file="$3"
 
-  # test for illegal characters
-
-  [[ -n $_illegaltitlechars ]] \
-    && [[ $title =~ ([${_illegaltitlechars}]) ]] \
-      && ERX "'${BASH_REMATCH[1]}' in $title, illegal character "
+  # test non accepted characters
+  [[ -n $_char_blacklist && $title =~ ([${_char_blacklist}]) ]] && {
+    echo "'${BASH_REMATCH[1]}' in $title, illegal character "
+    return 1
+  }
 
   allfiles
   # same title can be entered in any number of files

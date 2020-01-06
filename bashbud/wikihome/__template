@@ -1,5 +1,5 @@
 ---
-target:   README.md
+target:   ___wikihome
 markdown: true
 wrap:     60
 ...
@@ -40,4 +40,3 @@ OPTIONS
 %%fi%%
 %%done%%
 %%fi%%
-
