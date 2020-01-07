@@ -40,7 +40,9 @@ addlink() {
       notify-send -u critical "$assert"
     fi
 
-    addlink "$url" --category "$category"
+    linklord --add "$url"           \
+             --category "$category" \
+             ${__o[add-to-history]:+--add-to-history}
     exit
   else
 
