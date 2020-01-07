@@ -4,35 +4,41 @@ ___printversion(){
   
 cat << 'EOB' >&2
 linklord - version: 2020.01
-updated: 2020-01-04 by budRich
+updated: 2020-01-07 by budRich
 EOB
 }
 
 
 # environment variables
 : "${XDG_CONFIG_HOME:=$HOME/.config}"
-: "${LINKLORD_DIR:=$HOME/tmp/links}"
+: "${LINKLORD_DIR:=$XDG_CONFIG_HOME/linklord}"
 : "${LINKLORD_SETTINGS:=$LINKLORD_DIR/.settings}"
 
 
 main(){
 
-  _history="$LINKLORD_DIR/.history"
-  _reportfile="$LINKLORD_DIR/.log"
-  _settings="$LINKLORD_DIR/.settings"
-  _actions="$LINKLORD_DIR/.actions"
+  _menu_browse=(dmenu -p "select link: ")
+  _menu_action=(dmenu -p "select action: ")
+  _menu_add_title=(dmenu -p "title for url: ")
+  _menu_add_category=(dmenu -p "store in category: ")
+  _find_options=(-maxdepth 1 -mindepth 1 -not -name ".*")
 
+  [[ -n "${__o[dir]}" ]] && LINKLORD_DIR="${__o[dir]}"
   [[ -d $LINKLORD_DIR ]] || createconf "$LINKLORD_DIR"
-  [[ -f $_settings ]] && . "$_settings"
+  [[ -n "${__o[settings]}" ]] && LINKLORD_SETTINGS="${__o[settings]}"
+  [[ -f $LINKLORD_SETTINGS ]] && . "$LINKLORD_SETTINGS"
 
+  : "${_history_links:="$LINKLORD_DIR/.history-l"}"
+  : "${_history_actions:="$LINKLORD_DIR/.history-a"}"
+  : "${_history_categories="$LINKLORD_DIR/.history-c"}"
+  : "${_history_size:=10}"
+  : "${_reportfile:="$LINKLORD_DIR/.log"}"
+  : "${_actionfile:="$LINKLORD_DIR/.actions"}"
   : "${_spliton:="linklord was here"}"
-  : "${_illegaltitlechars:="[]<'"}"
+  : "${_char_blacklist:="][<>"}"
   : "${_prefixlink:=" " }"
   : "${_prefixfile:=" " }"
   : "${_prefixfolder:=" "}"
-  
-  _rofi_options=(-i -markup-rows)
-  _find_options=(-maxdepth 1 -mindepth 1 -not -name ".*")
 
   if [[ -f $* ]]; then
     appendlinks "$*"
@@ -44,6 +50,9 @@ main(){
 
 }
 
+
+
+
 ___printhelp(){
   
 cat << 'EOB' >&2
@@ -52,30 +61,58 @@ linklord - a markdown flavored bookmarks manager
 
 SYNOPSIS
 --------
-linklord [--dir|-d LINKLORD_DIR] [--print|-p FORMAT]|[--clipboard|-s FORMAT]|[--exec|-x FORMAT]
-linklord [--dir|-d LINKLORD_DIR] [--category|-c CATEGORY] [--title|-t TITLE]|[--filter|-f TITLE] --add LINK
-linklord [--dir|-d LINKLORD_DIR] MARKDOWN_FILE
+linklord [--dir|-d DIR] [--settings|-s FILE] [--print|-p FORMAT]|[--exec|-x FORMAT]
+linklord [--dir|-d DIR] [--settings|-s FILE] [--category|-c CATEGORY] [--title|-t TITLE] [--add-to-history] --add|-a LINK
+linklord [--dir|-d DIR] [--settings|-s FILE] MARKDOWN_FILE
 linklord --help|-h
 linklord --version|-v
 
 OPTIONS
 -------
 
---dir|-d MARKDOWN_FILE  
+--dir|-d DIR  
+Override the environment variable: LINKLORD_DIR
+
+
+--settings|-s FILE  
+Override the environment variable:
+LINKLORD_SETTINGS
+
 
 --print|-p FORMAT  
+Print the FORMAT string to stdout when a link is
+selected.  %u and %t in FORMAT will be replaced
+with URL and TITLE of the selected link.
 
---clipboard|-s FORMAT  
 
 --exec|-x FORMAT  
+the FORMAT string will get evaluated when a link
+is selected.  %u and %t in FORMAT will be replaced
+with URL and TITLE of the selected link.
+
 
 --category|-c CATEGORY  
+If set the prompt for category when using the
+--add option will get bypassed. The link will get
+saved to CATEGORY, (the relative path to a file in
+LINKLORD_DIR).
+
 
 --title|-t TITLE  
+If set the prompt for title when using the --add
+option will get bypassed.  The value of TITLE will
+be used as title for the link.
 
---filter|-f TITLE  
 
---add LINK  
+--add-to-history  
+If set links will get added to the history file
+when the --add option is used.
+
+
+
+--add|-a LINK  
+Add URL to the database.
+
 
 --help|-h  
 Show help and exit.
@@ -83,85 +120,103 @@ Show help and exit.
 
 --version|-v  
 Show version and exit.
+
 EOB
 }
 
 
 addlink() {
-  local trg msg
+  local trg str dunstifyis
   local url="$1"
   local title="${__o[title]:-}"
   local category="${__o[category]:-}"
 
-  : "${title:=$(menu --prompt "title for $url: " \
-                     ${__o[filter]:+--options} \
-                     "${__o[filter]:+-filter "'${__o[filter]}'"}" \
-                     --layout titlebar 
-               )}"
+  : "${title:=$(echo -n | "${_menu_add_title[@]}")}"
 
   [[ -z $title ]] || : "${category:=$(
-    find "$LINKLORD_DIR" "${_find_options_all[@]}" -type f \
-    | sed "s;${LINKLORD_DIR}/;;g" \
-    | menu --prompt "category for $title: " --layout window
+    {
+      allfiles
+      [[ -f "$_history_categories" ]] && cat "$_history_categories"
+      printf '%s\n' "${_files[@]}" | sed "s;${LINKLORD_DIR}/;;g"
+    } | awk '!a[$0]++' | "${_menu_add_category[@]}"
            
   )}"
 
-  dunstify -C 123454
-  [[ -z $category || -z $title ]] && ERX no category
+  # close Error message from previous add link if
+  # dunstifyis (installed)
+  [[ ${dunstifyis:=$(command -v dunstify)} ]] \
+    && dunstify -C 123454
 
+  [[ -z $category || -z $title ]] && ERX add link canceled
+
+  addtohistory "$category" "$_history_categories"
+  # addtohistory
   trg="${LINKLORD_DIR}/$category"
 
   assert="$(verifytitle "$title" "$url" "$trg")"
   if [[ $assert = "$trg" ]]; then
     ERM "$title already exist in $category"
+
   elif [[ -n $assert ]]; then
-    dunstify -r 123454 -u critical "$assert"
-    addurl "$url" --category "$category"
+
+    if [[ $dunstifyis ]]; then
+      dunstify -r 123454 -u critical "$assert"
+    else
+      notify-send -u critical "$assert"
+    fi
+
+    addlink "$url" --category "$category"
     exit
   else
+
     mkdir -p "${trg%/*}"
 
-    printf '[%s]: %s\n' "$title" "$url" >> "$trg"
+    str="$(printf '[%s]: %s' "$title" "$url")"
 
-    msg="$(printf 'added url: %s\nas %s in %s\n' \
+    echo "$str" >> "$trg"
+
+    ((__o["add-to-history"] == 1)) \
+      && addtohistory "$str" "$_history_links" "$_history_size"
+
+    ERM "$(printf 'added url: %s\nas %s in %s\n' \
                   "$url" "$title" "$category"
           )"
-
-    ERM "$msg"
   fi
 }
 
 addtohistory() {
-  local name tmpf
+  local name="$1" history="$2" limit="${3:-666}" tmpf
 
-  tmpf="$(mktemp)"
+  if [[ -f $history ]]; then
 
-  name="$1"
+    tmpf="$(mktemp)"
 
-  if [[ -f $_history ]]; then
-  
-    awk -v name="$name" '
+    awk -v limit="${limit}" -v name="$name" '
       BEGIN {a[name]=1 ; print name}
-      !a[$0]++
-    ' "${_history:-}" > "$tmpf"
+      !a[$0]++ && limit > ++i {print}
+    ' "$history" > "$tmpf"
 
-    mv -f "$tmpf" "$_history"
+    mv -f "$tmpf" "$history"
   else
-    echo "$name" > "$_history"
+    echo "$name" > "$history"
   fi
 }
 
-
+# store path to all files in array '_files'
+# if it doesn't already exist
+# separet with null char -d ''
 allfiles() {
-  declare -ga _files
-  # store path to all files in array 'files'
-  # separet with null char -d ''
-  readarray -t -d '' _files < <(find "$LINKLORD_DIR" \
-                                     -mindepth 1     \
-                                     -not -name ".*" \
-                                     -type f         \
-                                     -print0         \
-                               )
+  [[ -z ${_files[0]} ]] && {
+    declare -ga _files
+    
+    readarray -t -d '' _files  \
+      < <(find "$LINKLORD_DIR" \
+               -mindepth 1     \
+               -not -name ".*" \
+               -type f         \
+               -print0         \
+         )
+  }        
 }
 appendlinks() {
 
@@ -173,7 +228,7 @@ appendlinks() {
   rm -f "$_reportfile"
   linklist="$(getlinks "$trgpath")" 
 
-  [[ -f "$_reportfile" ]] && ERM "$(< "$_reportfile")"
+  [[ -f "$_reportfile" ]] && ERM "$(sort -u "$_reportfile")"
   
   [[ -n $linklist ]] && tdir="$(mktemp -d)" && (
     cd "$tdir" || ERX could not create temp dir
@@ -202,19 +257,29 @@ aconfdirs=(
 mkdir -p "$1" "${aconfdirs[@]}"
 
 cat << 'EOCONF' > "$trgdir/.settings"
+
+_reportfile="$LINKLORD_DIR/.log"
+_actionfile="$LINKLORD_DIR/.actions"
+_history_links="$LINKLORD_DIR/.history-l"
+_history_actions="$LINKLORD_DIR/.history-a"
+_history_categories="$LINKLORD_DIR/.history-c"
+_history_size=5
 _spliton="linklord was here"
-_illegaltitlechars="[]<'"
+_char_blacklist="[]<'"
 _prefixlink=" " 
 _prefixfile=" " 
 _prefixfolder=" "
+_menu_browse=(dmenu -p "select link: ")
+_menu_action=(dmenu -p "select action: ")
+_menu_add_title=(dmenu -p "title for url: ")
+_menu_add_category=(dmenu -p "store in category: ")
+
+# shellcheck disable=SC2034
 EOCONF
 
 cat << 'EOCONF' > "$trgdir/.actions"
-print %u
-clipboard %u
-clipboard [%t]
+print %t - %u
 exec browser %u
-clipboard %t
 EOCONF
 
 cat << 'EOCONF' > "$trgdir/budlabs"
@@ -267,7 +332,7 @@ getlinks() {
   awk -v reportfile="$_reportfile" -v targetfile="$targetfile" -F "[][]" '
 
     # first line not yaml start
-    NR == 1 && FILENAME == targetfile && $0 !~ /^---$/ {dashcount=2}
+    FNR == 1 && FILENAME == targetfile && $0 !~ /^---$/ {dashcount=2}
     /^---$/     {dashcount++}
     /^```|~~~/ {codeblock++}
     
@@ -288,16 +353,17 @@ getlinks() {
 
         # dont include direct url []() or ref []:
         # dont bother with links not in the database
-        else if (($(i+1) ~ /^\s*[^(]/ || !$(i+1)) ) {
+        else if (($(i+1) ~ /^\s*[^(]/ || !$(i-1)) ) {
           # [][] - $(i+1) is nothing
           # NF-1 != i to not include block at end of line
           # ![] - image, previous block ends with !
           if (!(!$(i+1) && (NF-1) != i) && $(i-1) !~ /!$/)
+            name = gensub(/^.*[/]/,"",1,FILENAME)
             if ($i in links) {
-              printf("%-7s: %s\n", "ADDED", $i) > reportfile
+              printf("%s: %s: %s\n",name, "ADDED", $i) > reportfile
               found[$i]=links[$i]
             }  else {
-              printf("%-7s: %s\n", "NO URL", $i) > reportfile
+              printf("%s: %s: %s\n",name, "NO URL", $i) > reportfile
             }
         }
       }
@@ -306,39 +372,50 @@ getlinks() {
   ' "${_files[@]}" "$1"
 }
 
+geturl() {
+
+  local title="$1"
+
+  allfiles
+
+  awk -F "[][]" -v title="$title" '
+    $2 == title {
+      print(gensub(/^.*[]]:\s*/,"",1,$0))
+      exit
+    }
+  ' "${_files[@]}"
+}
+
 linkaction() {
-  local url title printformat choice
-  # <span lang='URL'></span>${_prefixlink}TITLE
-  url=$(cut -f2 -d\' <<< "$1")
-  title="${1##*>}"
-  title="${title#${_prefixlink}}"
+  local url title printformat choice hstr
 
-  addtohistory "$(printf '[%s]: %s' "$title" "$url")"
+  title="${1#$_prefixlink}"
+  url="$(geturl "$title")"
 
-  printformat="${__o[exec]:-${__o[clipboard]:-${__o[print]:-}}}"
+  printformat="${__o[exec]:-${__o[print]:-}}"
 
   [[ -z $printformat ]] && {
 
-    [[ -f $_actions ]] || {
-      printf '%s\n'            \
-             "print %u"        \
-             "clipboard %u"    \
-             "clipboard [%t]"  \
-             "exec browser %u" \
-             "clipboard %t"    \
-      > "$_actions"
-    }
-    
-    choice="$(cat "$_actions"       \
-      | menu  --prompt "action: "   \
-              --layout A            \
-              --fallback '--layout D --fallback "--layout C"'
+    [[ -f $_actionfile ]] \
+      || { echo "print %u" > "$_actionfile" ;}
+
+    choice="$(
+      {
+        [[ -f "$_history_actions" ]] && cat "$_history_actions"
+        cat "$_actionfile"
+      } | awk '!a[$0]++' | "${_menu_action[@]}"
     )"
 
     [[ -z $choice ]] && ERX no action selected
+
+    addtohistory "$choice" "$_history_actions"
     __o["${choice%% *}"]=1
     printformat="${choice#* }"
+
   }
+
+  hstr="$(printf '[%s]: %s' "$title" "$url")"
+  addtohistory "$hstr" "$_history_links" "$_history_size"
 
   printformat="${printformat//%u/$url}"
   printformat="${printformat//%t/$title}"
@@ -347,15 +424,13 @@ linkaction() {
     eval "${printformat}"
   elif [[ -n ${__o[print]} ]]; then
     echo "$printformat"
-  else
-    xclip -r -sel c <<< "$printformat"
-    xclip -r -sel p <<< "$printformat"
   fi
 }
 
 listlinks() {
-  local cur="$1" trg url choice title
-  local format="<span lang='%s'></span>%s\n"
+  local cur="$1" trg choice
+  local format="${_prefixlink}%s\n"
+  # local format="<span lang='%s'></span>%s\n"
 
   choice="$(
   {
@@ -370,10 +445,9 @@ listlinks() {
         find "$cur" "${_find_options[@]}" -type f -exec cat '{}' \;
       fi
       # format linklist and remove duplicates with awk
-    } | awk -v format="$format" -v _prefixlink="$_prefixlink" -F "[][]" '
+    } | awk -v format="$format" -F "[][]" '
           NF == 3 && !a[$2]++ {
-            url=gensub(/^:\s*/,"",1,$3)
-            printf(format, url, _prefixlink $2)
+            printf(format, $2)
           }
         '
 
@@ -383,16 +457,13 @@ listlinks() {
       find "$cur" "${_find_options[@]}" -type d -printf "${_prefixfolder}%f\n"
     }
 
-  } | menu --prompt "select url or tag: "  \
-           --options "-no-custom"          \
-           --layout A                      \
-           --fallback '--layout D --fallback "--layout C"'
+  } | "${_menu_browse[@]}"
   )"
 
   [[ -z $choice ]] && ERX nothing selected
 
   # test if choice has markup, if true, its a link
-  if [[ $choice =~ ^\< ]];then
+  if [[ $choice =~ ^${_prefixlink} ]];then
    linkaction "$choice"
   else
     # trim prefix, append trg to cur to get path
@@ -406,39 +477,14 @@ listlinks() {
   fi
 }
 
-menu() {
-
-  while (($#>0)); do
-    case "$1" in
-      --prompt|-p  ) prompt="$2" ; shift ;;
-      --options|-o ) ropts+=(${2}) ; shift ;;
-      * ) opts+=("$1") ;;
-    esac
-    shift
-  done
-
-  ropts+=("${_rofi_options[@]}")
-
-  if   command -v i3menu  > /dev/null 2>&1 ; then
-    i3menu --prompt "$prompt"      \
-           --option "${ropts[*]}"  \
-           "${opts[@]}"
-  elif command -v rofi    > /dev/null 2>&1 ; then
-    rofi "${ropts[@]}" -dmenu -p "$prompt"
-  else
-    ERX "no 'rofi' installation found"
-  fi
-  
-}
-
 verifytitle() {
   local title="$1" url="$2" file="$3"
 
-  # test for illegal characters
-
-  [[ -n $_illegaltitlechars ]] \
-    && [[ $title =~ ([${_illegaltitlechars}]) ]] \
-      && ERX "'${BASH_REMATCH[1]}' in $title, illegal character "
+  # test non accepted characters
+  [[ -n $_char_blacklist && $title =~ ([${_char_blacklist}]) ]] && {
+    echo "'${BASH_REMATCH[1]}' in $title, illegal character "
+    return 1
+  }
 
   allfiles
   # same title can be entered in any number of files
@@ -467,8 +513,8 @@ verifytitle() {
 declare -A __o
 options="$(
   getopt --name "[ERROR]:linklord" \
-    --options "d:p:s:x:c:t:f:hv" \
-    --longoptions "dir:,print:,clipboard:,exec:,category:,title:,filter:,add:,help,version," \
+    --options "d:s:p:x:c:t:a:hv" \
+    --longoptions "dir:,settings:,print:,exec:,category:,title:,add-to-history,add:,help,version," \
     -- "$@" || exit 77
 )"
 
@@ -478,13 +524,13 @@ unset options
 while true; do
   case "$1" in
     --dir        | -d ) __o[dir]="${2:-}" ; shift ;;
+    --settings   | -s ) __o[settings]="${2:-}" ; shift ;;
     --print      | -p ) __o[print]="${2:-}" ; shift ;;
-    --clipboard  | -s ) __o[clipboard]="${2:-}" ; shift ;;
     --exec       | -x ) __o[exec]="${2:-}" ; shift ;;
     --category   | -c ) __o[category]="${2:-}" ; shift ;;
     --title      | -t ) __o[title]="${2:-}" ; shift ;;
-    --filter     | -f ) __o[filter]="${2:-}" ; shift ;;
-    --add        ) __o[add]="${2:-}" ; shift ;;
+    --add-to-history ) __o[add-to-history]=1 ;; 
+    --add        | -a ) __o[add]="${2:-}" ; shift ;;
     --help       | -h ) ___printhelp && exit ;;
     --version    | -v ) ___printversion && exit ;;
     -- ) shift ; break ;;
