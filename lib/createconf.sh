@@ -5,18 +5,19 @@ local trgdir="$1"
 declare -a aconfdirs
 
 aconfdirs=(
+"$trgdir/links"
 )
 
 mkdir -p "$1" "${aconfdirs[@]}"
 
-cat << 'EOCONF' > "$trgdir/.settings"
+cat << 'EOCONF' > "$trgdir/actions"
+print %t - %u
+exec browser %u
+EOCONF
+
+cat << 'EOCONF' > "$trgdir/settings"
 #!/bin/bash
 
-_reportfile="$LINKLORD_DIR/.log"
-_actionfile="$LINKLORD_DIR/.actions"
-_history_links="$LINKLORD_DIR/.history-l"
-_history_actions="$LINKLORD_DIR/.history-a"
-_history_categories="$LINKLORD_DIR/.history-c"
 _history_size=5
 _spliton="linklord was here"
 _char_blacklist="[]<'"
@@ -31,12 +32,7 @@ _menu_add_category=(dmenu -p "store in category: ")
 # shellcheck disable=SC2034
 EOCONF
 
-cat << 'EOCONF' > "$trgdir/.actions"
-print %t - %u
-exec browser %u
-EOCONF
-
-cat << 'EOCONF' > "$trgdir/budlabs"
+cat << 'EOCONF' > "$trgdir/links/budlabs"
 [budlabs github]: https://github.com/budlabs
 [budlabs youtube channel]: https://youtube.com/c/dubbeltumme
 EOCONF

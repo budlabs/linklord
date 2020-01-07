@@ -11,12 +11,12 @@ dependencies:  [bash, gawk]
 see-also:      [bash(1), awk(1)]
 environ:
     XDG_CONFIG_HOME: $HOME/.config
-    LINKLORD_DIR: $XDG_CONFIG_HOME/linklord
-    LINKLORD_SETTINGS: $LINKLORD_DIR/.settings
+    LINKLORD_SETTINGS_DIR: $XDG_CONFIG_HOME/linklord
+    LINKLORD_LINKS_DIR: $LINKLORD_SETTINGS_DIR/links
 synopsis: |
-    [--dir|-d DIR] [--settings|-s FILE] [--print|-p FORMAT]|[--exec|-x FORMAT]
-    [--dir|-d DIR] [--settings|-s FILE] [--category|-c CATEGORY] [--title|-t TITLE] [--add-to-history] --add|-a LINK
-    [--dir|-d DIR] [--settings|-s FILE] **MARKDOWN_FILE**
+    [--settings-dir|-s DIR] [--links-dir|-d DIR] [--print|-p FORMAT]|[--exec|-x FORMAT]
+    --add|-a LINK [--settings-dir|-s DIR] [--links-dir|-d DIR] [--category|-c CATEGORY] [--title|-t TITLE] [--add-to-history]
+    [--settings-dir|-s DIR] [--links-dir|-d DIR] **MARKDOWN_FILE**
     --help|-h
     --version|-v
 ...

@@ -3,9 +3,9 @@
 SYNOPSIS
 --------
 ```text
-linklord [--dir|-d DIR] [--settings|-s FILE] [--print|-p FORMAT]|[--exec|-x FORMAT]
-linklord [--dir|-d DIR] [--settings|-s FILE] [--category|-c CATEGORY] [--title|-t TITLE] [--add-to-history] --add|-a LINK
-linklord [--dir|-d DIR] [--settings|-s FILE] MARKDOWN_FILE
+linklord [--settings-dir|-s DIR] [--links-dir|-d DIR] [--print|-p FORMAT]|[--exec|-x FORMAT]
+linklord --add|-a LINK [--settings-dir|-s DIR] [--links-dir|-d DIR] [--category|-c CATEGORY] [--title|-t TITLE] [--add-to-history]
+linklord [--settings-dir|-s DIR] [--links-dir|-d DIR] MARKDOWN_FILE
 linklord --help|-h
 linklord --version|-v
 ```
@@ -13,13 +13,13 @@ linklord --version|-v
 OPTIONS
 -------
 
-`--dir`|`-d` DIR  
+`--settings-dir`|`-s` DIR  
 Override the environment variable:
-**LINKLORD_DIR**
+**LINKLORD_SETTINGS_DIR**
 
-`--settings`|`-s` FILE  
+`--links-dir`|`-d` DIR  
 Override the environment variable:
-**LINKLORD_SETTINGS**
+**LINKLORD_LINKS_DIR**
 
 `--print`|`-p` FORMAT  
 Print the FORMAT string to stdout when a link is
@@ -30,6 +30,9 @@ replaced with URL and TITLE of the selected link.
 the FORMAT string will get evaluated when a link
 is selected.  `%u` and `%t` in FORMAT will be
 replaced with URL and TITLE of the selected link.
+
+`--add`|`-a` LINK  
+Add URL to the *database*.
 
 `--category`|`-c` CATEGORY  
 If set the prompt for category when using the
@@ -47,9 +50,6 @@ If set links will get added to the history file
 when the `--add` option is used.
 
 
-`--add`|`-a` LINK  
-Add URL to the *database*.
-
 `--help`|`-h`  
 Show help and exit.
 
@@ -58,44 +58,43 @@ Show version and exit.
 
 ## environment variables
 
-The environment variable **LINKLORD_DIR**
-contains the path to where the links are saved. It
-defaults to `XDG_CONFIG_HOME/.config`, and can be
-overridden with the command line option `--dir`.
-By changing this variable one could have multiple
-databases for whatever that reason that might be.  
+#### LINKLORD_SETTINS_DIR
 
-**LINKLORD_SETTINGS** contains the path to the
-settings file, it's value can be overridden with
-the command line option `--settings`. Defaults to:
-`LINKLORD_DIR/.settings`
+Path to where linklord store its configuration
+and log files
+(`settings`,`actions`,`.history-l`,`.history-a`,`history-c`,`.log`).
+Defaults to `XDG_CONFIG_HOME/.config/linklord`,
+and can be overridden with the command line option
+`--settings-dir|-s`.
+
+#### LINKLORD_LINKS_DIR
+
+Where the links are stored, defaults to:
+`LINKLORD_SETTINGS_DIR/links`, and can be
+overridden with the command line option
+`--links-dir|-d`.
 
 ## files
 
 
-If **LINKLORD_DIR** doesn't exist when `linklord`
-is executed, the directory will get created with a
-`.settings` and `.action` file with the default
-values set to all global variables.
+If **LINKLORD_SETTINGS_DIR** doesn't exist when
+`linklord` is executed, the directory will get
+created with a `settings` and `action` file with
+the default values set for all global variables.
 
 ## global variables
 
 
 Every time `linklord` is executed the
-**LINKLORD_SETTINGS** will get sourced and any
-variables declared in the file will be used as
-global variables in `linklord`.
+`LINKLORD_SETTINGS_DIR/settings` will get sourced
+and any variables declared in the file will be
+used as global variables in `linklord`.
 
 **LINKLORD_SETTINGS**
 
 ``` bash
 #!/bin/bash
 
-_reportfile="$LINKLORD_DIR/.log"
-_actionfile="$LINKLORD_DIR/.actions"
-_history_links="$LINKLORD_DIR/.history-l"
-_history_actions="$LINKLORD_DIR/.history-a"
-_history_categories="$LINKLORD_DIR/.history-c"
 _history_size=5
 _spliton="linklord was here"
 _char_blacklist="[]<'"
@@ -111,32 +110,11 @@ _menu_add_category=(dmenu -p "store in category: ")
 ```
 
 
-### `_reportfile`
-
-Path to a file where `linklord` stores the
-results from the last scan of a markdown document
-when [appending links][linklord wiki - append
-links].  
-
-### `_actionfile`
-
-Each line of this file is a action that can be
-chosen from a menu after a link is selected. see
-[actions wiki page][linklord wiki - the actions]
-for more info.
-
-### `_history_*`
-
-These files contain the last selected item and is
-used to make sure that the last chosen items are
-the first selectable items in the menus.
-
 ### `_history_size`
 
 How many selected links to remember, these will
 be listed before other links, files and
-directories. See [browser wiki page][linklord wiki
-- the browser] for more info.
+directories.
 
 ### `_spliton`
 
@@ -163,19 +141,15 @@ Any menu program that accepts a list as input can
 be used. Tested with `fzf` (terminal only),
 `rofi`, `i3menu` and `dmenu`.
 
-
-
 ## the "database"
 
 
 `linklord` searches for links in all files that
-are not prefixed with a `.` in **LINKLORD_DIR**
-(*defaults to `XDG_CONFIG_HOME/linklord`, but can
-be set with environment variable or the
-commandline option `-d DIR`*). The links should be
-stored in markdown format like this:  
+are not prefixed with a `.` in
+**LINKLORD_LINKS_DIR**. The links are stored in
+markdown format like this:  
 
-**LINKLORD_DIR/**file1  
+**LINKLORD_DIR**/file1  
 ```
 [title1]: URL-1
 [title2]: URL-A
@@ -215,16 +189,16 @@ prompt for the title:
 lets say we enter "title1". Now a prompt for
 **category** will get displayed together with a
 list of all **categories** (*i.e files in
-LINKLORD_DIR*). We can select one of the entries
-in the list or enter the name for a new category.
-if we assume the file `budlabs` ([linklord wiki -
-append links]) exist, and we select that. We would
-first get an error message since that already
-exist with a different URL. A new prompt to
-re-enter the title, will be shown lets enter
-"MyTitle".  The category will be the same so no
-need to enter that twice. This title is valid and
-the file `LINKLORD_DIR/budlabs` will now look like
+LINKLORD_LINKS_DIR*). We can select one of the
+entries in the list or enter the name for a new
+category. if we assume the file `budlabs` exist,
+and we select that. We would first get an error
+message since that already exist with a different
+URL. A new prompt to re-enter the title, will be
+shown lets enter "MyTitle".  The category will be
+the same so no need to enter that twice. This
+title is valid and the file
+`LINKLORD_LINKS_DIR/budlabs` will now look like
 this:
 
 ```
@@ -234,27 +208,17 @@ this:
 ```
 
 
-Since *MyTitle* is in the example markdown file
-([linklord wiki - append links]), it would get
-appended together with *youtube* to the end of the
-file if we would execute `linklord article.md`
-again.
-
-[linklord was here]: #
-[linklord wiki - append links]: https://github.com/budlabs/linklord/wiki/50LL_append_links
-
-
-
 ## the "browser"
 
 
 If neither a markdown file or the `--add` option
 is used when `linklord` is invoked it will instead
-display a menu with the links in **LINKLORD_DIR**,
- it will also list all categories (files).  
+display a menu with the links in
+**LINKLORD_LINKS_DIR**,  it will also list all
+categories (files).  
 
 If the following three files exist in
-**LINKLORD_DIR**:  
+**LINKLORD_LINKS_DIR**:  
 ```
 - `LINKLORD_DIR/`
     - `subdir/`
@@ -306,13 +270,14 @@ listed.
 
 If a link is selected a new menu with actions
 will get displayed. Actions are defined in the
-file `LINKLORD_DIR/.actions` .  Or with the
-commandline options `--print FORMAT` or `--exec
-FORMAT`. When the commandline options are used the
-action menu will not be displayed. Each action
-consists of two parts: The action and a FORMAT:
+file `LINKLORD_SETTINGS_DIR/actions` .  Or with
+the commandline options `--print FORMAT` or
+`--exec FORMAT`. When the commandline options are
+used the action menu will not be displayed. Each
+action consists of two parts: The action and a
+FORMAT:
 
-`LINKLORD_DIR/.actions`  
+`LINKLORD_SETTINGS_DIR/actions`  
 ```
 print %t - %u
 exec browser %u
@@ -331,10 +296,9 @@ expanded when the action is executed:
 
 After the action is executed, the selected link
 will also get added to the history
-(`BASHBUD_DIR/.history`), the links in the history
-will get added to the top of the list next time
-`linklord` is executed for browsing ([linklord
-wiki - browsing]).
+(`LINKLORD_SETTINGS_DIR/.history-f`), the links in
+the history will get added to the top of the list
+next time `linklord` is executed for browsing.
 
 When a markdown file (*a file with either **md**
 or **markdown***) is passed as an argument to
@@ -344,7 +308,7 @@ those references is found in the file based
 database they will get appended to the markdown
 file.  
 
-**LINKLORD_DIR**/budlabs  
+**LINKLORD_LINKS_DIR**/budlabs  
 ```
 [github]: https://github.com/budlabs
 [youtube]: https://youtube.com/c/dubbeltumme
@@ -413,8 +377,7 @@ appended, everything below this line will get
 overwritten by **linklord** every time this
 document is processed. The string **linklord was
 here**, can be changed by setting the `_spliton`
-variable in [LINKLORD_SETTINGS][linklord wiki -
-configuring]
+variable in `LINKLORD_SETTINGS_DIR/settings`
 
 
 EXAMPLES
@@ -430,13 +393,13 @@ ENVIRONMENT
 
 defaults to: $HOME/.config
 
-`LINKLORD_DIR`  
+`LINKLORD_SETTINGS_DIR`  
 
 defaults to: $XDG_CONFIG_HOME/linklord
 
-`LINKLORD_SETTINGS`  
+`LINKLORD_LINKS_DIR`  
 
-defaults to: $LINKLORD_DIR/.settings
+defaults to: $LINKLORD_SETTINGS_DIR/links
 
 DEPENDENCIES
 ------------

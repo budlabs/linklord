@@ -11,11 +11,12 @@ EOB
 
 # environment variables
 : "${XDG_CONFIG_HOME:=$HOME/.config}"
-: "${LINKLORD_DIR:=$XDG_CONFIG_HOME/linklord}"
-: "${LINKLORD_SETTINGS:=$LINKLORD_DIR/.settings}"
+: "${LINKLORD_SETTINGS_DIR:=$XDG_CONFIG_HOME/linklord}"
+: "${LINKLORD_LINKS_DIR:=$LINKLORD_SETTINGS_DIR/links}"
 
 
 main(){
+
 
   _menu_browse=(dmenu -p "select link: ")
   _menu_action=(dmenu -p "select action: ")
@@ -23,17 +24,25 @@ main(){
   _menu_add_category=(dmenu -p "store in category: ")
   _find_options=(-maxdepth 1 -mindepth 1 -not -name ".*")
 
-  [[ -n "${__o[dir]}" ]] && LINKLORD_DIR="${__o[dir]}"
-  [[ -d $LINKLORD_DIR ]] || createconf "$LINKLORD_DIR"
-  [[ -n "${__o[settings]}" ]] && LINKLORD_SETTINGS="${__o[settings]}"
-  [[ -f $LINKLORD_SETTINGS ]] && . "$LINKLORD_SETTINGS"
+  [[ -n "${__o[settings-dir]}" ]] \
+    && LINKLORD_SETTINGS_DIR="${__o[settings-dir]}"
 
-  : "${_history_links:="$LINKLORD_DIR/.history-l"}"
-  : "${_history_actions:="$LINKLORD_DIR/.history-a"}"
-  : "${_history_categories="$LINKLORD_DIR/.history-c"}"
+  [[ -n "${__o[links-dir]}" ]] \
+    && LINKLORD_LINKS_DIR="${__o[links-dir]}"
+  
+  local sd=$LINKLORD_SETTINGS_DIR
+  local ld=$LINKLORD_LINKS_DIR
+
+  [[ -d $sd ]] || createconf "$sd"
+  [[ -f $sd/settings ]] && . "$sd/settings"
+
+  _history_links="$sd/.history-l"
+  _history_actions="$sd/.history-a"
+  _history_categories="$sd/.history-c"
+  _reportfile="$sd/.log"
+  _actionfile="$sd/actions"
+
   : "${_history_size:=10}"
-  : "${_reportfile:="$LINKLORD_DIR/.log"}"
-  : "${_actionfile:="$LINKLORD_DIR/.actions"}"
   : "${_spliton:="linklord was here"}"
   : "${_char_blacklist:="][<>"}"
   : "${_prefixlink:=" " }"
@@ -45,7 +54,8 @@ main(){
   elif [[ -n ${__o[add]} ]]; then
     addlink "${__o[add]}"
   elif [[ -z $* ]]; then
-    listlinks "$LINKLORD_DIR"
+    [[ -d $ld ]] || ERX "$ld doesn't exist"
+    listlinks "$ld"
   fi
 
 }
@@ -61,22 +71,23 @@ linklord - a markdown flavored bookmarks manager
 
 SYNOPSIS
 --------
-linklord [--dir|-d DIR] [--settings|-s FILE] [--print|-p FORMAT]|[--exec|-x FORMAT]
-linklord [--dir|-d DIR] [--settings|-s FILE] [--category|-c CATEGORY] [--title|-t TITLE] [--add-to-history] --add|-a LINK
-linklord [--dir|-d DIR] [--settings|-s FILE] MARKDOWN_FILE
+linklord [--settings-dir|-s DIR] [--links-dir|-d DIR] [--print|-p FORMAT]|[--exec|-x FORMAT]
+linklord --add|-a LINK [--settings-dir|-s DIR] [--links-dir|-d DIR] [--category|-c CATEGORY] [--title|-t TITLE] [--add-to-history]
+linklord [--settings-dir|-s DIR] [--links-dir|-d DIR] MARKDOWN_FILE
 linklord --help|-h
 linklord --version|-v
 
 OPTIONS
 -------
 
---dir|-d DIR  
-Override the environment variable: LINKLORD_DIR
-
-
---settings|-s FILE  
+--settings-dir|-s DIR  
 Override the environment variable:
-LINKLORD_SETTINGS
+LINKLORD_SETTINGS_DIR
+
+
+--links-dir|-d DIR  
+Override the environment variable:
+LINKLORD_LINKS_DIR
 
 
 --print|-p FORMAT  
@@ -89,6 +100,10 @@ with URL and TITLE of the selected link.
 the FORMAT string will get evaluated when a link
 is selected.  %u and %t in FORMAT will be replaced
 with URL and TITLE of the selected link.
+
+
+--add|-a LINK  
+Add URL to the database.
 
 
 --category|-c CATEGORY  
@@ -108,10 +123,6 @@ be used as title for the link.
 If set links will get added to the history file
 when the --add option is used.
 
-
-
---add|-a LINK  
-Add URL to the database.
 
 
 --help|-h  
@@ -137,7 +148,7 @@ addlink() {
     {
       allfiles
       [[ -f "$_history_categories" ]] && cat "$_history_categories"
-      printf '%s\n' "${_files[@]}" | sed "s;${LINKLORD_DIR}/;;g"
+      printf '%s\n' "${_files[@]}" | sed "s;${LINKLORD_LINKS_DIR}/;;g"
     } | awk '!a[$0]++' | "${_menu_add_category[@]}"
            
   )}"
@@ -151,7 +162,7 @@ addlink() {
 
   addtohistory "$category" "$_history_categories"
   # addtohistory
-  trg="${LINKLORD_DIR}/$category"
+  trg="$LINKLORD_LINKS_DIR/$category"
 
   assert="$(verifytitle "$title" "$url" "$trg")"
   if [[ $assert = "$trg" ]]; then
@@ -210,7 +221,7 @@ allfiles() {
     declare -ga _files
     
     readarray -t -d '' _files  \
-      < <(find "$LINKLORD_DIR" \
+      < <(find "$LINKLORD_LINKS_DIR" \
                -mindepth 1     \
                -not -name ".*" \
                -type f         \
@@ -252,17 +263,18 @@ local trgdir="$1"
 declare -a aconfdirs
 
 aconfdirs=(
+"$trgdir/links"
 )
 
 mkdir -p "$1" "${aconfdirs[@]}"
 
-cat << 'EOCONF' > "$trgdir/.settings"
+cat << 'EOCONF' > "$trgdir/actions"
+print %t - %u
+exec browser %u
+EOCONF
 
-_reportfile="$LINKLORD_DIR/.log"
-_actionfile="$LINKLORD_DIR/.actions"
-_history_links="$LINKLORD_DIR/.history-l"
-_history_actions="$LINKLORD_DIR/.history-a"
-_history_categories="$LINKLORD_DIR/.history-c"
+cat << 'EOCONF' > "$trgdir/settings"
+
 _history_size=5
 _spliton="linklord was here"
 _char_blacklist="[]<'"
@@ -277,12 +289,7 @@ _menu_add_category=(dmenu -p "store in category: ")
 # shellcheck disable=SC2034
 EOCONF
 
-cat << 'EOCONF' > "$trgdir/.actions"
-print %t - %u
-exec browser %u
-EOCONF
-
-cat << 'EOCONF' > "$trgdir/budlabs"
+cat << 'EOCONF' > "$trgdir/links/budlabs"
 [budlabs github]: https://github.com/budlabs
 [budlabs youtube channel]: https://youtube.com/c/dubbeltumme
 EOCONF
@@ -436,8 +443,8 @@ listlinks() {
   {
     {
       # list all links ('[TITLE]: URL')
-      [[ $cur = "$LINKLORD_DIR" ]] && [[ -f $_history ]] \
-        && cat "$_history"
+      [[ $cur = "$LINKLORD_LINKS_DIR" ]] && [[ -f $_history_links ]] \
+        && cat "$_history_links"
       
       if [[ -f $cur ]]; then
         cat "$cur"
@@ -513,8 +520,8 @@ verifytitle() {
 declare -A __o
 options="$(
   getopt --name "[ERROR]:linklord" \
-    --options "d:s:p:x:c:t:a:hv" \
-    --longoptions "dir:,settings:,print:,exec:,category:,title:,add-to-history,add:,help,version," \
+    --options "s:d:p:x:a:c:t:hv" \
+    --longoptions "settings-dir:,links-dir:,print:,exec:,add:,category:,title:,add-to-history,help,version," \
     -- "$@" || exit 77
 )"
 
@@ -523,14 +530,14 @@ unset options
 
 while true; do
   case "$1" in
-    --dir        | -d ) __o[dir]="${2:-}" ; shift ;;
-    --settings   | -s ) __o[settings]="${2:-}" ; shift ;;
+    --settings-dir | -s ) __o[settings-dir]="${2:-}" ; shift ;;
+    --links-dir  | -d ) __o[links-dir]="${2:-}" ; shift ;;
     --print      | -p ) __o[print]="${2:-}" ; shift ;;
     --exec       | -x ) __o[exec]="${2:-}" ; shift ;;
+    --add        | -a ) __o[add]="${2:-}" ; shift ;;
     --category   | -c ) __o[category]="${2:-}" ; shift ;;
     --title      | -t ) __o[title]="${2:-}" ; shift ;;
     --add-to-history ) __o[add-to-history]=1 ;; 
-    --add        | -a ) __o[add]="${2:-}" ; shift ;;
     --help       | -h ) ___printhelp && exit ;;
     --version    | -v ) ___printversion && exit ;;
     -- ) shift ; break ;;

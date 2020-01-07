@@ -37,19 +37,20 @@ OPTIONS
 -------
 
 ```text
-linklord [--dir|-d DIR] [--settings|-s FILE] [--print|-p FORMAT]|[--exec|-x FORMAT]
-linklord [--dir|-d DIR] [--settings|-s FILE] [--category|-c CATEGORY] [--title|-t TITLE] [--add-to-history] --add|-a LINK
-linklord [--dir|-d DIR] [--settings|-s FILE] MARKDOWN_FILE
+linklord [--settings-dir|-s DIR] [--links-dir|-d DIR] [--print|-p FORMAT]|[--exec|-x FORMAT]
+linklord --add|-a LINK [--settings-dir|-s DIR] [--links-dir|-d DIR] [--category|-c CATEGORY] [--title|-t TITLE] [--add-to-history]
+linklord [--settings-dir|-s DIR] [--links-dir|-d DIR] MARKDOWN_FILE
 linklord --help|-h
 linklord --version|-v
 ```
 
 
-`--dir`|`-d` DIR  
-Override the environment variable: **LINKLORD_DIR**
+`--settings-dir`|`-s` DIR  
+Override the environment variable:
+**LINKLORD_SETTINGS_DIR**
 
-`--settings`|`-s` FILE  
-Override the environment variable: **LINKLORD_SETTINGS**
+`--links-dir`|`-d` DIR  
+Override the environment variable: **LINKLORD_LINKS_DIR**
 
 `--print`|`-p` FORMAT  
 Print the FORMAT string to stdout when a link is selected. 
@@ -60,6 +61,9 @@ of the selected link.
 the FORMAT string will get evaluated when a link is
 selected.  `%u` and `%t` in FORMAT will be replaced with URL
 and TITLE of the selected link.
+
+`--add`|`-a` LINK  
+Add URL to the *database*.
 
 `--category`|`-c` CATEGORY  
 If set the prompt for category when using the `--add`
@@ -75,9 +79,6 @@ for the link.
 If set links will get added to the history file when the
 `--add` option is used.
 
-
-`--add`|`-a` LINK  
-Add URL to the *database*.
 
 `--help`|`-h`  
 Show help and exit.

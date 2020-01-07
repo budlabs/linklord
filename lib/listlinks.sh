@@ -9,8 +9,8 @@ listlinks() {
   {
     {
       # list all links ('[TITLE]: URL')
-      [[ $cur = "$LINKLORD_DIR" ]] && [[ -f $_history ]] \
-        && cat "$_history"
+      [[ $cur = "$LINKLORD_LINKS_DIR" ]] && [[ -f $_history_links ]] \
+        && cat "$_history_links"
       
       if [[ -f $cur ]]; then
         cat "$cur"

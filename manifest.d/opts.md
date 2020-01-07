@@ -4,11 +4,11 @@ Show help and exit.
 # options-version-description
 Show version and exit.
 
-# options-settings-description
-Override the environment variable: **LINKLORD_SETTINGS**
+# options-links-dir-description
+Override the environment variable: **LINKLORD_LINKS_DIR**
 
-# options-dir-description
-Override the environment variable: **LINKLORD_DIR**
+# options-settings-dir-description
+Override the environment variable: **LINKLORD_SETTINGS_DIR**
 
 # options-add-description
 Add URL to the *database*. 

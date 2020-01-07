@@ -8,7 +8,7 @@ allfiles() {
     declare -ga _files
     
     readarray -t -d '' _files  \
-      < <(find "$LINKLORD_DIR" \
+      < <(find "$LINKLORD_LINKS_DIR" \
                -mindepth 1     \
                -not -name ".*" \
                -type f         \

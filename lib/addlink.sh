@@ -12,7 +12,7 @@ addlink() {
     {
       allfiles
       [[ -f "$_history_categories" ]] && cat "$_history_categories"
-      printf '%s\n' "${_files[@]}" | sed "s;${LINKLORD_DIR}/;;g"
+      printf '%s\n' "${_files[@]}" | sed "s;${LINKLORD_LINKS_DIR}/;;g"
     } | awk '!a[$0]++' | "${_menu_add_category[@]}"
            
   )}"
@@ -26,7 +26,7 @@ addlink() {
 
   addtohistory "$category" "$_history_categories"
   # addtohistory
-  trg="${LINKLORD_DIR}/$category"
+  trg="$LINKLORD_LINKS_DIR/$category"
 
   assert="$(verifytitle "$title" "$url" "$trg")"
   if [[ $assert = "$trg" ]]; then
