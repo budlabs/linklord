@@ -2,7 +2,7 @@
 
 _history_size=5
 _spliton="linklord was here"
-_char_blacklist="[]<'"
+_char_blacklist="][<'"
 _prefixlink=" " 
 _prefixfile=" " 
 _prefixfolder=" "
