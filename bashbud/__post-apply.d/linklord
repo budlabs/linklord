@@ -3,6 +3,7 @@
 dir="$1"
 wd="$dir/wiki"
 
-for f in "$dir/README.md" "$wd/Home.md" "$wd/doc/"*.md ; do
+# for f in "$dir/README.md" "$wd/Home.md" "$wd/doc/"*.md ; do
+for f in "$dir/README.md" "$wd/Home.md" ; do
   [[ -f $f ]] && linklord "$f"
 done

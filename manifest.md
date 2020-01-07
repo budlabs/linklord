@@ -1,14 +1,14 @@
 ---
 description: >
-  a markdown flavored bookmarks manager
+  a markdown flavored bookmark manager
 updated:       2020-01-07
-version:       2020.01
+version:       2020.01.07.4
 author:        budRich
 repo:          https://github.com/budlabs/linklord
 created:       2019-12-27
 type:          default
-dependencies:  [bash, gawk]
-see-also:      [bash(1), awk(1)]
+dependencies:  [bash, gawk, sed]
+see-also:      [dmenu(1),fzf(1),rofi(1)]
 environ:
     XDG_CONFIG_HOME: $HOME/.config
     LINKLORD_SETTINGS_DIR: $XDG_CONFIG_HOME/linklord

@@ -1,4 +1,4 @@
-`linklord` - a markdown flavored bookmarks manager
+`linklord` - a markdown flavored bookmark manager
 
 SYNOPSIS
 --------
@@ -380,12 +380,6 @@ here**, can be changed by setting the `_spliton`
 variable in `LINKLORD_SETTINGS_DIR/settings`
 
 
-EXAMPLES
---------
-`linklord --help` display help  
-`linklord --version` display version  
-`man linklord` show man page  
-
 ENVIRONMENT
 -----------
 
@@ -405,6 +399,7 @@ DEPENDENCIES
 ------------
 `bash`
 `gawk`
+`sed`
 
 
 

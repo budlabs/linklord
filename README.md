@@ -1,4 +1,4 @@
-# linklord - a markdown flavored bookmarks manager 
+# linklord - a markdown flavored bookmark manager 
 
 linklord was created out of the frustration of finding
 myself constantly digging up urls when writing markdown
@@ -12,7 +12,7 @@ use cases.
 ## installation
 
 If you are using **Arch linux**, you can install the
-linklord package from [AUR][linklord AUR].  
+linklord package from [AUR][linklord aur].  
 
 Or follow the instructions below to install from source:  
 
@@ -33,8 +33,7 @@ updated: 2020-01-03 by budRich
 The only file you really need is `linklord.bash` , you can
 also just add that to your **$PATH**.
 
-OPTIONS
--------
+## OPTIONS
 
 ```text
 linklord [--settings-dir|-s DIR] [--links-dir|-d DIR] [--print|-p FORMAT]|[--exec|-x FORMAT]
@@ -86,16 +85,17 @@ Show help and exit.
 `--version`|`-v`  
 Show version and exit.
 
-EXAMPLES
---------
+## updates
 
-`linklord --help` display help  
-`linklord --version` display version  
-`man linklord` show man page  
+#### 2020.01.07.01
+
+Initial release.
+
 
 ## known issues
 
-No known issues
+Perfect software, no known issues
 
 [linklord was here]: #
 [linklord wiki]: https://github.com/budlabs/linklord/wiki
+[linklord aur]: https://aur.archlinux.org/packages/linklord

@@ -1,2 +1,1 @@
 print %t - %u
-exec browser %u

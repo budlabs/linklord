@@ -4,15 +4,9 @@ linklord was created out of the frustration of finding myself constantly digging
 
 See the [wiki][linklord wiki] for more info and examples of use cases.  
 
-# examples
-
-`linklord --help` display help  
-`linklord --version` display version  
-`man linklord` show man page    
-
 # readme_install
 
-If you are using **Arch linux**, you can install the linklord package from [AUR][linklord AUR].  
+If you are using **Arch linux**, you can install the linklord package from [AUR][linklord aur].  
 
 Or follow the instructions below to install from source:  
 
@@ -32,5 +26,5 @@ The only file you really need is `linklord.bash` , you can also just add that to
 
 # readme_issues
 
-No known issues
+Perfect software, no known issues
 

@@ -16,16 +16,14 @@ wrap:     60
 %%fi%%
 %%if long_description%%
 
-USAGE
------
+## USAGE
 
 %%long_description%%
 
 %%fi%%
 %%if synopsis%%
 
-OPTIONS
--------
+## OPTIONS
 
 ```text
 %%synopsis%%
@@ -64,6 +62,7 @@ EXAMPLES
 %%examples%%
 %%fi%%
 %%if -d releasenotes%%
+
 ## updates
 
 %%cat -t -n 3 releasenotes/*%%

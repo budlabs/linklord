@@ -3,7 +3,7 @@
 ___printversion(){
   
 cat << 'EOB' >&2
-linklord - version: 2020.01
+linklord - version: 2020.01.07.4
 updated: 2020-01-07 by budRich
 EOB
 }
@@ -66,7 +66,7 @@ main(){
 ___printhelp(){
   
 cat << 'EOB' >&2
-linklord - a markdown flavored bookmarks manager
+linklord - a markdown flavored bookmark manager
 
 
 SYNOPSIS
@@ -270,7 +270,6 @@ mkdir -p "$1" "${aconfdirs[@]}"
 
 cat << 'EOCONF' > "$trgdir/actions"
 print %t - %u
-exec browser %u
 EOCONF
 
 cat << 'EOCONF' > "$trgdir/settings"
@@ -290,6 +289,7 @@ _menu_add_category=(dmenu -p "store in category: ")
 EOCONF
 
 cat << 'EOCONF' > "$trgdir/links/budlabs"
+[linklord wiki]: https://github.com/budlabs/linklord/wiki
 [budlabs github]: https://github.com/budlabs
 [budlabs youtube channel]: https://youtube.com/c/dubbeltumme
 EOCONF

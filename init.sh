@@ -3,7 +3,7 @@
 ___printversion(){
   
 cat << 'EOB' >&2
-linklord - version: 2020.01
+linklord - version: 2020.01.07.4
 updated: 2020-01-07 by budRich
 EOB
 }
@@ -18,7 +18,7 @@ EOB
 ___printhelp(){
   
 cat << 'EOB' >&2
-linklord - a markdown flavored bookmarks manager
+linklord - a markdown flavored bookmark manager
 
 
 SYNOPSIS

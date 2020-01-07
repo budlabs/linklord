@@ -13,8 +13,9 @@ rm -f "$projectdir"/___{version,wikihome,envs,help,getopt}
 cp -f -t "$projectdir/next"                 \
          "$projectdir/README.md"            \
          "$projectdir/LICENSE"              \
+         "$projectdir/Makefile"             \
          "$projectdir/${projectdir##*/}.1"  \
 
 
 cp -f "$projectdir/program.sh"              \
-      "$projectdir/next/${projectdir##*/}.bash"
+      "$projectdir/next/${projectdir##*/}"

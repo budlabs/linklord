@@ -2,8 +2,7 @@
 .TH LINKLORD 1 2020\-01\-07 Linux "User Manuals"
 .SH NAME
 .PP
-\fB\fClinklord\fR \- a markdown flavored bookmarks
-manager
+\fB\fClinklord\fR \- a markdown flavored bookmark manager
 
 .SH SYNOPSIS
 .PP
@@ -480,14 +479,6 @@ document is processed. The string \fBlinklord was
 here\fP, can be changed by setting the \fB\fC\_spliton\fR
 variable in \fB\fCLINKLORD\_SETTINGS\_DIR/settings\fR
 
-.SH EXAMPLES
-.PP
-\fB\fClinklord \-\-help\fR display help
-.br
-\fB\fClinklord \-\-version\fR display version
-.br
-\fB\fCman linklord\fR show man page
-
 .SH ENVIRONMENT
 .PP
 \fB\fCXDG\_CONFIG\_HOME\fR
@@ -509,7 +500,7 @@ defaults to: $LINKLORD\_SETTINGS\_DIR/links
 
 .SH DEPENDENCIES
 .PP
-\fB\fCbash\fR \fB\fCgawk\fR
+\fB\fCbash\fR \fB\fCgawk\fR \fB\fCsed\fR
 
 .PP
 budRich https://github.com/budlabs/linklord
@@ -517,4 +508,4 @@ budRich https://github.com/budlabs/linklord
 
 .SH SEE ALSO
 .PP
-bash(1), awk(1),
+dmenu(1), fzf(1), rofi(1),

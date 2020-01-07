@@ -12,7 +12,6 @@ mkdir -p "$1" "${aconfdirs[@]}"
 
 cat << 'EOCONF' > "$trgdir/actions"
 print %t - %u
-exec browser %u
 EOCONF
 
 cat << 'EOCONF' > "$trgdir/settings"
@@ -33,6 +32,7 @@ _menu_add_category=(dmenu -p "store in category: ")
 EOCONF
 
 cat << 'EOCONF' > "$trgdir/links/budlabs"
+[linklord wiki]: https://github.com/budlabs/linklord/wiki
 [budlabs github]: https://github.com/budlabs
 [budlabs youtube channel]: https://youtube.com/c/dubbeltumme
 EOCONF
