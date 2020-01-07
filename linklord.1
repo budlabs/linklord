@@ -1,0 +1,511 @@
+.nh
+.TH LINKLORD 1 2020\-01\-07 Linux "User Manuals"
+.SH NAME
+.PP
+\fB\fClinklord\fR \- a markdown flavored bookmark manager
+
+.SH SYNOPSIS
+.PP
+.RS
+
+.nf
+linklord [\-\-settings\-dir|\-s DIR] [\-\-links\-dir|\-d DIR] [\-\-print|\-p FORMAT]|[\-\-exec|\-x FORMAT]
+linklord \-\-add|\-a LINK [\-\-settings\-dir|\-s DIR] [\-\-links\-dir|\-d DIR] [\-\-category|\-c CATEGORY] [\-\-title|\-t TITLE] [\-\-add\-to\-history]
+linklord [\-\-settings\-dir|\-s DIR] [\-\-links\-dir|\-d DIR] MARKDOWN\_FILE
+linklord \-\-help|\-h
+linklord \-\-version|\-v
+
+.fi
+.RE
+
+.SH OPTIONS
+.PP
+\fB\fC\-\-settings\-dir\fR|\fB\fC\-s\fR DIR
+.br
+Override the environment variable:
+\fBLINKLORD\_SETTINGS\_DIR\fP
+
+.PP
+\fB\fC\-\-links\-dir\fR|\fB\fC\-d\fR DIR
+.br
+Override the environment variable:
+\fBLINKLORD\_LINKS\_DIR\fP
+
+.PP
+\fB\fC\-\-print\fR|\fB\fC\-p\fR FORMAT
+.br
+Print the FORMAT string to stdout when a link is
+selected.  \fB\fC%u\fR and \fB\fC%t\fR in FORMAT will be
+replaced with URL and TITLE of the selected link.
+
+.PP
+\fB\fC\-\-exec\fR|\fB\fC\-x\fR FORMAT
+.br
+the FORMAT string will get evaluated when a link
+is selected.  \fB\fC%u\fR and \fB\fC%t\fR in FORMAT will be
+replaced with URL and TITLE of the selected link.
+
+.PP
+\fB\fC\-\-add\fR|\fB\fC\-a\fR LINK
+.br
+Add URL to the \fIdatabase\fP\&.
+
+.PP
+\fB\fC\-\-category\fR|\fB\fC\-c\fR CATEGORY
+.br
+If set the prompt for category when using the
+\fB\fC\-\-add\fR option will get bypassed. The link will
+get saved to CATEGORY, (the relative path to a
+file in LINKLORD\_DIR).
+
+.PP
+\fB\fC\-\-title\fR|\fB\fC\-t\fR TITLE
+.br
+If set the prompt for title when using the
+\fB\fC\-\-add\fR option will get bypassed.  The value of
+TITLE will be used as title for the link.
+
+.PP
+\fB\fC\-\-add\-to\-history\fR
+.br
+If set links will get added to the history file
+when the \fB\fC\-\-add\fR option is used.
+
+.PP
+\fB\fC\-\-help\fR|\fB\fC\-h\fR
+.br
+Show help and exit.
+
+.PP
+\fB\fC\-\-version\fR|\fB\fC\-v\fR
+.br
+Show version and exit.
+
+.SH environment variables
+.SS LINKLORD\_SETTINS\_DIR
+.PP
+Path to where linklord store its configuration
+and log files
+(\fB\fCsettings\fR,\fB\fCactions\fR,\fB\fC\&.history\-\&l\fR,\fB\fC\&.history\-\&a\fR,\fB\fChistory\-c\fR,\fB\fC\&.log\fR).
+Defaults to \fB\fCXDG\_CONFIG\_HOME/.config/linklord\fR,
+and can be overridden with the command line option
+\fB\fC\-\-settings\-dir|\-s\fR\&.
+
+.SS LINKLORD\_LINKS\_DIR
+.PP
+Where the links are stored, defaults to:
+\fB\fCLINKLORD\_SETTINGS\_DIR/links\fR, and can be
+overridden with the command line option
+\fB\fC\-\-links\-dir|\-d\fR\&.
+
+.SH files
+.PP
+If \fBLINKLORD\_SETTINGS\_DIR\fP doesn't exist when
+\fB\fClinklord\fR is executed, the directory will get
+created with a \fB\fCsettings\fR and \fB\fCaction\fR file with
+the default values set for all global variables.
+
+.SH global variables
+.PP
+Every time \fB\fClinklord\fR is executed the
+\fB\fCLINKLORD\_SETTINGS\_DIR/settings\fR will get sourced
+and any variables declared in the file will be
+used as global variables in \fB\fClinklord\fR\&.
+
+.PP
+\fBLINKLORD\_SETTINGS\fP
+
+.PP
+.RS
+
+.nf
+#!/bin/bash
+
+\_history\_size=5
+\_spliton="linklord was here"
+\_char\_blacklist="[]<'"
+\_prefixlink=" " 
+\_prefixfile=" " 
+\_prefixfolder=" "
+\_menu\_browse=(dmenu \-p "select link: ")
+\_menu\_action=(dmenu \-p "select action: ")
+\_menu\_add\_title=(dmenu \-p "title for url: ")
+\_menu\_add\_category=(dmenu \-p "store in category: ")
+
+# shellcheck disable=SC2034
+
+.fi
+.RE
+
+.SS \fB\fC\_history\_size\fR
+.PP
+How many selected links to remember, these will
+be listed before other links, files and
+directories.
+
+.SS \fB\fC\_spliton\fR
+.PP
+String used to indicate where \fB\fClinklord\fR has
+appended links to a markdown document.
+
+.SS \fB\fC\_char\_blacklist\fR
+.PP
+The characters in this string is not allowed in
+titles.
+
+.SS \fB\fC\_prefix*\fR
+.PP
+Prefix for the different types used in the
+browser menu. By default unicode characters from
+the iconfont "Font Awesome" is used, but changing
+these settings makes it easy to customize.
+
+.SS \fB\fC\_menu\_*\fR
+.PP
+The commands used to spawn the different menus.
+Must be entered as arrays (within parenthesis).
+Any menu program that accepts a list as input can
+be used. Tested with \fB\fCfzf\fR (terminal only),
+\fB\fCrofi\fR, \fB\fCi3menu\fR and \fB\fCdmenu\fR\&.
+
+.SH the "database"
+.PP
+\fB\fClinklord\fR searches for links in all files that
+are not prefixed with a \fB\fC\&.\fR in
+\fBLINKLORD\_LINKS\_DIR\fP\&. The links are stored in
+markdown format like this:
+
+.PP
+\fBLINKLORD\_DIR\fP/file1
+
+.PP
+.RS
+
+.nf
+[title1]: URL\-1
+[title2]: URL\-A
+[title3]: URL\-1
+
+.fi
+.RE
+
+.PP
+\fBLINKLORD\_DIR\fP/subdir/file2
+
+.PP
+.RS
+
+.nf
+[title4]: URL\-1
+[title2]: URL\-A
+[title5]: URL\-C
+
+.fi
+.RE
+
+.PP
+The title is linked to the URL, but not vice
+verse. Multiple records can have the same URL but
+different titles(\fBtitle1\fP,\fBtitle3\fP and
+\fBtitle4\fP). Records where both the URL and the
+title is the same can occur in multiple files
+(\fBtitle2\fP). Think of the files as
+\fBcategories\fP\&. When a markdown file is searched
+it only matches the titles and as soon as it finds
+a match it insert the corresponding URL, this is
+why one title can't match multiple URLs.
+
+.PP
+By using the command line option \fB\fC\-\-add URL\fR with
+\fB\fClinklord\fR a verification of the title will be
+performed before adding the link. If \fB\fC\-\-title
+TITLE\fR and \fB\fC\-\-category CATEGORY\fR is not set, a
+menu will prompt for that info.
+
+.PP
+\fB\fClinklord \-\-add URL\-D\fR would result in first a
+prompt for the title:
+.br
+> title for URL\-D:
+
+.PP
+lets say we enter "title1". Now a prompt for
+\fBcategory\fP will get displayed together with a
+list of all \fBcategories\fP (\fIi.e files in
+LINKLORD\_LINKS\_DIR\fP). We can select one of the
+entries in the list or enter the name for a new
+category. if we assume the file \fB\fCbudlabs\fR exist,
+and we select that. We would first get an error
+message since that already exist with a different
+URL. A new prompt to re\-enter the title, will be
+shown lets enter "MyTitle".  The category will be
+the same so no need to enter that twice. This
+title is valid and the file
+\fB\fCLINKLORD\_LINKS\_DIR/budlabs\fR will now look like
+this:
+
+.PP
+.RS
+
+.nf
+[github]: https://github.com/budlabs
+[youtube]: https://youtube.com/c/dubbeltumme
+[MyTitle]: URL\-D
+
+.fi
+.RE
+
+.SH the "browser"
+.PP
+If neither a markdown file or the \fB\fC\-\-add\fR option
+is used when \fB\fClinklord\fR is invoked it will instead
+display a menu with the links in
+\fBLINKLORD\_LINKS\_DIR\fP,  it will also list all
+categories (files).
+
+.PP
+If the following three files exist in
+\fBLINKLORD\_LINKS\_DIR\fP:
+
+.PP
+.RS
+
+.nf
+\- `LINKLORD\_DIR/`
+    \- `subdir/`
+        \- `file2`  
+          [title4]: URL\-1
+          [title2]: URL\-A
+          [title5]: URL\-C
+
+    \- `file1`
+      [title1]: URL\-1
+      [title2]: URL\-A
+      [title3]: URL\-1
+
+    \- 'budlabs'
+      [github]: https://github.com/budlabs
+      [youtube]: https://youtube.com/c/dubbeltumme
+      [MyTitle]: URL\-D
+
+.fi
+.RE
+
+.PP
+the list would look something like this:
+
+.PP
+.RS
+
+.nf
+L github
+L youtube
+L MyTitle
+L title1
+L title2
+L title3
+F budlabs
+F file1
+D subdir
+
+
+.fi
+.RE
+
+.PP
+(\fB\fCL\fR == link, \fB\fCF\fR == file, \fB\fCD\fR == directory)
+
+.PP
+notice that no links from \fBsubdir/file2\fP is
+included and that the directory name (\fBsubdir\fP)
+is. If a file is selected, a new list with only
+the links in that file will get listed. If a
+directory is selected all files, links and
+directories within the selected directory will get
+listed.
+
+.SS actions
+.PP
+If a link is selected a new menu with actions
+will get displayed. Actions are defined in the
+file \fB\fCLINKLORD\_SETTINGS\_DIR/actions\fR .  Or with
+the commandline options \fB\fC\-\-print FORMAT\fR or
+\fB\fC\-\-exec FORMAT\fR\&. When the commandline options are
+used the action menu will not be displayed. Each
+action consists of two parts: The action and a
+FORMAT:
+
+.PP
+\fB\fCLINKLORD\_SETTINGS\_DIR/actions\fR
+
+.PP
+.RS
+
+.nf
+print %t \- %u
+exec browser %u
+
+.fi
+.RE
+
+.RS
+.IP \(bu 2
+\fBprint\fP: prints FORMAT to \fB\fCstdout\fR
+.IP \(bu 2
+\fBexec\fP: evaluates FORMAT.
+
+.RE
+
+.PP
+FORMAT has two special symbols that will get
+expanded when the action is executed:
+* \fB%u\fP \- expands to the selected links URL
+
+.RS
+.IP \(bu 2
+\fB%t\fP \- expands to the selected links title
+.br
+
+
+.RE
+
+.PP
+After the action is executed, the selected link
+will also get added to the history
+(\fB\fCLINKLORD\_SETTINGS\_DIR/.history\-f\fR), the links in
+the history will get added to the top of the list
+next time \fB\fClinklord\fR is executed for browsing.
+
+.PP
+When a markdown file (*a file with either \fBmd\fP
+or \fBmarkdown\fP*) is passed as an argument to
+\fB\fClinklord\fR, that markdown file will get searched
+for declared but not referenced markdown links. If
+those references is found in the file based
+database they will get appended to the markdown
+file.
+
+.PP
+\fBLINKLORD\_LINKS\_DIR\fP/budlabs
+
+.PP
+.RS
+
+.nf
+[github]: https://github.com/budlabs
+[youtube]: https://youtube.com/c/dubbeltumme
+
+.fi
+.RE
+
+.PP
+\fBarticle.md\fP
+
+.PP
+.RS
+
+.nf
+# example direct reference
+This first link will get ignored, 
+it already has direct url reference: [link1](https://example.com)
+
+# missing reference
+But this one: [MyTitle] doesn't so linklord will search for an url
+matching "MyTitle".
+
+# not missing reference
+[link5] is already referenced in the file, 
+it will be ignored by linklord.
+
+[link5]: https://example.com
+
+# referencing reference
+[link3][youtube] "link3" has the reference "youtube", 
+so it will get ignored, but youtube it self lacks a 
+reference so that will get searched for.
+
+.fi
+.RE
+
+.PP
+The command: \fB\fClinklord article.md\fR would print
+the following message:
+.br
+>     NO URL: MyTitle
+.br
+>     ADDED: youtube
+
+.PP
+\fBarticle.md\fP will get updated to this:
+
+.PP
+\fBarticle.md\fP
+
+.PP
+.RS
+
+.nf
+# example direct reference
+This first link will get ignored, 
+it already has direct url reference: [link1](https://example.com)
+
+# missing reference
+But this one: [MyTitle] doesn't so linklord will search for an url
+matching "MyTitle".
+
+# not missing reference
+[link5] is already referenced in the file, 
+it will be ignored by linklord.
+
+[link5]: https://example.com
+
+# referencing reference
+[link3][youtube] "link3" has the reference "youtube", 
+so it will get ignored, but youtube it self lacks a 
+reference so that will get searched for.
+
+[linklord was here]: #
+[youtube]: https://youtube.com/c/dubbeltumme
+
+.fi
+.RE
+
+.PP
+The reference \fB\fC[linklord was here]\fR is inserted
+for indicating what has been automatically
+appended, everything below this line will get
+overwritten by \fBlinklord\fP every time this
+document is processed. The string \fBlinklord was
+here\fP, can be changed by setting the \fB\fC\_spliton\fR
+variable in \fB\fCLINKLORD\_SETTINGS\_DIR/settings\fR
+
+.SH ENVIRONMENT
+.PP
+\fB\fCXDG\_CONFIG\_HOME\fR
+
+.PP
+defaults to: $HOME/.config
+
+.PP
+\fB\fCLINKLORD\_SETTINGS\_DIR\fR
+
+.PP
+defaults to: $XDG\_CONFIG\_HOME/linklord
+
+.PP
+\fB\fCLINKLORD\_LINKS\_DIR\fR
+
+.PP
+defaults to: $LINKLORD\_SETTINGS\_DIR/links
+
+.SH DEPENDENCIES
+.PP
+\fB\fCbash\fR \fB\fCgawk\fR \fB\fCsed\fR
+
+.PP
+budRich https://github.com/budlabs/linklord
+\[la]https://github.com/budlabs/linklord\[ra]
+
+.SH SEE ALSO
+.PP
+dmenu(1), fzf(1), rofi(1),
