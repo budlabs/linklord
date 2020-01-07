@@ -4,7 +4,7 @@ markdown: true
 wrap:     60
 ...
 # %%name%% - %%description%% 
-%%if readme_banner%%
+%%if long_description%%
 
 USAGE
 -----

@@ -33,12 +33,6 @@ updated: 2020-01-03 by budRich
 The only file you really need is `linklord.bash` , you can
 also just add that to your **$PATH**.
 
-USAGE
------
-
-INCHAIN
-
-
 OPTIONS
 -------
 

@@ -4,7 +4,7 @@ ___printversion(){
   
 cat << 'EOB' >&2
 linklord - version: 2020.01
-updated: 2020-01-05 by budRich
+updated: 2020-01-07 by budRich
 EOB
 }
 
@@ -17,6 +17,29 @@ EOB
 
 main(){
 
+  _menu_browse=(dmenu -p "select link: ")
+  _menu_action=(dmenu -p "select action: ")
+  _menu_add_title=(dmenu -p "title for url: ")
+  _menu_add_category=(dmenu -p "store in category: ")
+  _find_options=(-maxdepth 1 -mindepth 1 -not -name ".*")
+
+  [[ -n "${__o[dir]}" ]] && LINKLORD_DIR="${__o[dir]}"
+  [[ -d $LINKLORD_DIR ]] || createconf "$LINKLORD_DIR"
+  [[ -n "${__o[settings]}" ]] && LINKLORD_SETTINGS="${__o[settings]}"
+  [[ -f $LINKLORD_SETTINGS ]] && . "$LINKLORD_SETTINGS"
+
+  : "${_history_links:="$LINKLORD_DIR/.history-l"}"
+  : "${_history_actions:="$LINKLORD_DIR/.history-a"}"
+  : "${_history_categories="$LINKLORD_DIR/.history-c"}"
+  : "${_history_size:=10}"
+  : "${_reportfile:="$LINKLORD_DIR/.log"}"
+  : "${_actionfile:="$LINKLORD_DIR/.actions"}"
+  : "${_spliton:="linklord was here"}"
+  : "${_char_blacklist:="][<>"}"
+  : "${_prefixlink:=" " }"
+  : "${_prefixfile:=" " }"
+  : "${_prefixfolder:=" "}"
+
   if [[ -f $* ]]; then
     appendlinks "$*"
   elif [[ -n ${__o[add]} ]]; then
@@ -28,26 +51,7 @@ main(){
 }
 
 
-_menu_browse=(dmenu -p "select link: ")
-_menu_action=(dmenu -p "select action: ")
-_menu_add_title=(dmenu -p "title for url: ")
-_menu_add_category=(dmenu -p "store in category: ")
-_find_options=(-maxdepth 1 -mindepth 1 -not -name ".*")
 
-[[ -n "${__o[dir]}" ]] && LINKLORD_DIR="${__o[dir]}"
-[[ -d $LINKLORD_DIR ]] || createconf "$LINKLORD_DIR"
-[[ -n "${__o[settings]}" ]] && LINKLORD_SETTINGS="${__o[settings]}"
-[[ -f $LINKLORD_SETTINGS ]] && . "$LINKLORD_SETTINGS"
-
-: "${_historyfile:="$LINKLORD_DIR/.history"}"
-: "${_history_size:=10}"
-: "${_reportfile:="$LINKLORD_DIR/.log"}"
-: "${_actionfile:="$LINKLORD_DIR/.actions"}"
-: "${_spliton:="linklord was here"}"
-: "${_char_blacklist:="][<>"}"
-: "${_prefixlink:=" " }"
-: "${_prefixfile:=" " }"
-: "${_prefixfolder:=" "}"
 
 ___printhelp(){
   
@@ -127,13 +131,14 @@ addlink() {
   local title="${__o[title]:-}"
   local category="${__o[category]:-}"
 
-  ERM "${_menu_add_title[@]}"
   : "${title:=$(echo -n | "${_menu_add_title[@]}")}"
 
   [[ -z $title ]] || : "${category:=$(
-    find "$LINKLORD_DIR" "${_find_options_all[@]}" -type f \
-    | sed "s;${LINKLORD_DIR}/;;g" \
-    | "${_menu_add_category[@]}"
+    {
+      allfiles
+      [[ -f "$_history_categories" ]] && cat "$_history_categories"
+      printf '%s\n' "${_files[@]}" | sed "s;${LINKLORD_DIR}/;;g"
+    } | awk '!a[$0]++' | "${_menu_add_category[@]}"
            
   )}"
 
@@ -144,6 +149,8 @@ addlink() {
 
   [[ -z $category || -z $title ]] && ERX add link canceled
 
+  addtohistory "$category" "$_history_categories"
+  # addtohistory
   trg="${LINKLORD_DIR}/$category"
 
   assert="$(verifytitle "$title" "$url" "$trg")"
@@ -169,7 +176,7 @@ addlink() {
     echo "$str" >> "$trg"
 
     ((__o["add-to-history"] == 1)) \
-      && addtohistory "$str"
+      && addtohistory "$str" "$_history_links" "$_history_size"
 
     ERM "$(printf 'added url: %s\nas %s in %s\n' \
                   "$url" "$title" "$category"
@@ -178,22 +185,20 @@ addlink() {
 }
 
 addtohistory() {
-  local name tmpf
+  local name="$1" history="$2" limit="${3:-666}" tmpf
 
-  tmpf="$(mktemp)"
+  if [[ -f $history ]]; then
 
-  name="$1"
+    tmpf="$(mktemp)"
 
-  if [[ -f $_historyfile ]]; then
-  
-    awk -v limit="${_history_size:=5}" -v name="$name" '
+    awk -v limit="${limit}" -v name="$name" '
       BEGIN {a[name]=1 ; print name}
       !a[$0]++ && limit > ++i {print}
-    ' "${_historyfile:-}" > "$tmpf"
+    ' "$history" > "$tmpf"
 
-    mv -f "$tmpf" "$_historyfile"
+    mv -f "$tmpf" "$history"
   else
-    echo "$name" > "$_historyfile"
+    echo "$name" > "$history"
   fi
 }
 
@@ -255,7 +260,9 @@ cat << 'EOCONF' > "$trgdir/.settings"
 
 _reportfile="$LINKLORD_DIR/.log"
 _actionfile="$LINKLORD_DIR/.actions"
-_historyfile="$LINKLORD_DIR/.history"
+_history_links="$LINKLORD_DIR/.history-l"
+_history_actions="$LINKLORD_DIR/.history-a"
+_history_categories="$LINKLORD_DIR/.history-c"
 _history_size=5
 _spliton="linklord was here"
 _char_blacklist="[]<'"
@@ -380,7 +387,7 @@ geturl() {
 }
 
 linkaction() {
-  local url title printformat choice
+  local url title printformat choice hstr
 
   title="${1#$_prefixlink}"
   url="$(geturl "$title")"
@@ -392,16 +399,23 @@ linkaction() {
     [[ -f $_actionfile ]] \
       || { echo "print %u" > "$_actionfile" ;}
 
-    choice="$(< "$_actionfile" "${_menu_action[@]}")"
+    choice="$(
+      {
+        [[ -f "$_history_actions" ]] && cat "$_history_actions"
+        cat "$_actionfile"
+      } | awk '!a[$0]++' | "${_menu_action[@]}"
+    )"
 
     [[ -z $choice ]] && ERX no action selected
 
+    addtohistory "$choice" "$_history_actions"
     __o["${choice%% *}"]=1
     printformat="${choice#* }"
 
   }
 
-  addtohistory "$(printf '[%s]: %s' "$title" "$url")"
+  hstr="$(printf '[%s]: %s' "$title" "$url")"
+  addtohistory "$hstr" "$_history_links" "$_history_size"
 
   printformat="${printformat//%u/$url}"
   printformat="${printformat//%t/$title}"

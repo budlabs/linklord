@@ -1,5 +1,5 @@
 .nh
-.TH LINKLORD 1 2020\-01\-05 Linux "User Manuals"
+.TH LINKLORD 1 2020\-01\-07 Linux "User Manuals"
 .SH NAME
 .PP
 \fB\fClinklord\fR \- a markdown flavored bookmarks
@@ -18,10 +18,6 @@ linklord \-\-version|\-v
 
 .fi
 .RE
-
-.SH DESCRIPTION
-.PP
-INCHAIN
 
 .SH OPTIONS
 .PP
@@ -98,7 +94,8 @@ databases for whatever that reason that might be.
 .PP
 \fBLINKLORD\_SETTINGS\fP contains the path to the
 settings file, it's value can be overridden with
-the command line option \fB\fC\-\-settings\fR\&.
+the command line option \fB\fC\-\-settings\fR\&. Defaults to:
+\fB\fCLINKLORD\_DIR/.settings\fR
 
 .SH files
 .PP
@@ -108,6 +105,95 @@ is executed, the directory will get created with a
 values set to all global variables.
 
 .SH global variables
+.PP
+Every time \fB\fClinklord\fR is executed the
+\fBLINKLORD\_SETTINGS\fP will get sourced and any
+variables declared in the file will be used as
+global variables in \fB\fClinklord\fR\&.
+
+.PP
+\fBLINKLORD\_SETTINGS\fP
+
+.PP
+.RS
+
+.nf
+#!/bin/bash
+
+\_reportfile="$LINKLORD\_DIR/.log"
+\_actionfile="$LINKLORD\_DIR/.actions"
+\_history\_links="$LINKLORD\_DIR/.history\-l"
+\_history\_actions="$LINKLORD\_DIR/.history\-a"
+\_history\_categories="$LINKLORD\_DIR/.history\-c"
+\_history\_size=5
+\_spliton="linklord was here"
+\_char\_blacklist="[]<'"
+\_prefixlink=" " 
+\_prefixfile=" " 
+\_prefixfolder=" "
+\_menu\_browse=(dmenu \-p "select link: ")
+\_menu\_action=(dmenu \-p "select action: ")
+\_menu\_add\_title=(dmenu \-p "title for url: ")
+\_menu\_add\_category=(dmenu \-p "store in category: ")
+
+# shellcheck disable=SC2034
+
+.fi
+.RE
+
+.SS \fB\fC\_reportfile\fR
+.PP
+Path to a file where \fB\fClinklord\fR stores the
+results from the last scan of a markdown document
+when [appending links]linklord wiki \- append
+links
+\[la]https://github.com/budlabs/linklord/wiki/50LL_append_links\[ra]\&.
+
+.SS \fB\fC\_actionfile\fR
+.PP
+Each line of this file is a action that can be
+chosen from a menu after a link is selected. see
+[actions wiki page][linklord wiki \- the actions]
+for more info.
+
+.SS \fB\fC\_history\_*\fR
+.PP
+These files contain the last selected item and is
+used to make sure that the last chosen items are
+the first selectable items in the menus.
+
+.SS \fB\fC\_history\_size\fR
+.PP
+How many selected links to remember, these will
+be listed before other links, files and
+directories. See [browser wiki page][linklord wiki
+\- the browser] for more info.
+
+.SS \fB\fC\_spliton\fR
+.PP
+String used to indicate where \fB\fClinklord\fR has
+appended links to a markdown document.
+
+.SS \fB\fC\_char\_blacklist\fR
+.PP
+The characters in this string is not allowed in
+titles.
+
+.SS \fB\fC\_prefix*\fR
+.PP
+Prefix for the different types used in the
+browser menu. By default unicode characters from
+the iconfont "Font Awesome" is used, but changing
+these settings makes it easy to customize.
+
+.SS \fB\fC\_menu\_*\fR
+.PP
+The commands used to spawn the different menus.
+Must be entered as arrays (within parenthesis).
+Any menu program that accepts a list as input can
+be used. Tested with \fB\fCfzf\fR (terminal only),
+\fB\fCrofi\fR, \fB\fCi3menu\fR and \fB\fCdmenu\fR\&.
+
 .SH the "database"
 .PP
 \fB\fClinklord\fR searches for links in all files that

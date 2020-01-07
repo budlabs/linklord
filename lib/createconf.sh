@@ -14,7 +14,9 @@ cat << 'EOCONF' > "$trgdir/.settings"
 
 _reportfile="$LINKLORD_DIR/.log"
 _actionfile="$LINKLORD_DIR/.actions"
-_historyfile="$LINKLORD_DIR/.history"
+_history_links="$LINKLORD_DIR/.history-l"
+_history_actions="$LINKLORD_DIR/.history-a"
+_history_categories="$LINKLORD_DIR/.history-c"
 _history_size=5
 _spliton="linklord was here"
 _char_blacklist="[]<'"

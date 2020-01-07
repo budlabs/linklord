@@ -1,7 +1,7 @@
 ---
 description: >
   a markdown flavored bookmarks manager
-updated:       2020-01-05
+updated:       2020-01-07
 version:       2020.01
 author:        budRich
 repo:          https://github.com/budlabs/linklord
@@ -21,7 +21,6 @@ synopsis: |
     --version|-v
 ...
 
-# long_description
 
 
 

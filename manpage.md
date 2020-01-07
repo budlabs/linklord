@@ -10,11 +10,6 @@ linklord --help|-h
 linklord --version|-v
 ```
 
-DESCRIPTION
------------
-INCHAIN
-
-
 OPTIONS
 -------
 
@@ -72,7 +67,8 @@ databases for whatever that reason that might be.
 
 **LINKLORD_SETTINGS** contains the path to the
 settings file, it's value can be overridden with
-the command line option `--settings`.
+the command line option `--settings`. Defaults to:
+`LINKLORD_DIR/.settings`
 
 ## files
 
@@ -85,6 +81,87 @@ values set to all global variables.
 ## global variables
 
 
+Every time `linklord` is executed the
+**LINKLORD_SETTINGS** will get sourced and any
+variables declared in the file will be used as
+global variables in `linklord`.
+
+**LINKLORD_SETTINGS**
+
+``` bash
+#!/bin/bash
+
+_reportfile="$LINKLORD_DIR/.log"
+_actionfile="$LINKLORD_DIR/.actions"
+_history_links="$LINKLORD_DIR/.history-l"
+_history_actions="$LINKLORD_DIR/.history-a"
+_history_categories="$LINKLORD_DIR/.history-c"
+_history_size=5
+_spliton="linklord was here"
+_char_blacklist="[]<'"
+_prefixlink=" " 
+_prefixfile=" " 
+_prefixfolder=" "
+_menu_browse=(dmenu -p "select link: ")
+_menu_action=(dmenu -p "select action: ")
+_menu_add_title=(dmenu -p "title for url: ")
+_menu_add_category=(dmenu -p "store in category: ")
+
+# shellcheck disable=SC2034
+```
+
+
+### `_reportfile`
+
+Path to a file where `linklord` stores the
+results from the last scan of a markdown document
+when [appending links][linklord wiki - append
+links].  
+
+### `_actionfile`
+
+Each line of this file is a action that can be
+chosen from a menu after a link is selected. see
+[actions wiki page][linklord wiki - the actions]
+for more info.
+
+### `_history_*`
+
+These files contain the last selected item and is
+used to make sure that the last chosen items are
+the first selectable items in the menus.
+
+### `_history_size`
+
+How many selected links to remember, these will
+be listed before other links, files and
+directories. See [browser wiki page][linklord wiki
+- the browser] for more info.
+
+### `_spliton`
+
+String used to indicate where `linklord` has
+appended links to a markdown document.
+
+### `_char_blacklist`
+
+The characters in this string is not allowed in
+titles.
+
+### `_prefix*`
+
+Prefix for the different types used in the
+browser menu. By default unicode characters from
+the iconfont "Font Awesome" is used, but changing
+these settings makes it easy to customize.
+
+### `_menu_*`
+
+The commands used to spawn the different menus.
+Must be entered as arrays (within parenthesis).
+Any menu program that accepts a list as input can
+be used. Tested with `fzf` (terminal only),
+`rofi`, `i3menu` and `dmenu`.
 
 
 
