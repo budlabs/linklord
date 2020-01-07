@@ -2,17 +2,16 @@
 .TH LINKLORD 1 2020\-01\-07 Linux "User Manuals"
 .SH NAME
 .PP
-\fB\fClinklord\fR \- a markdown flavored bookmarks
-manager
+\fB\fClinklord\fR \- a markdown flavored bookmark manager
 
 .SH SYNOPSIS
 .PP
 .RS
 
 .nf
-linklord [\-\-dir|\-d DIR] [\-\-settings|\-s FILE] [\-\-print|\-p FORMAT]|[\-\-exec|\-x FORMAT]
-linklord [\-\-dir|\-d DIR] [\-\-settings|\-s FILE] [\-\-category|\-c CATEGORY] [\-\-title|\-t TITLE] [\-\-add\-to\-history] \-\-add|\-a LINK
-linklord [\-\-dir|\-d DIR] [\-\-settings|\-s FILE] MARKDOWN\_FILE
+linklord [\-\-settings\-dir|\-s DIR] [\-\-links\-dir|\-d DIR] [\-\-print|\-p FORMAT]|[\-\-exec|\-x FORMAT]
+linklord \-\-add|\-a LINK [\-\-settings\-dir|\-s DIR] [\-\-links\-dir|\-d DIR] [\-\-category|\-c CATEGORY] [\-\-title|\-t TITLE] [\-\-add\-to\-history]
+linklord [\-\-settings\-dir|\-s DIR] [\-\-links\-dir|\-d DIR] MARKDOWN\_FILE
 linklord \-\-help|\-h
 linklord \-\-version|\-v
 
@@ -21,16 +20,16 @@ linklord \-\-version|\-v
 
 .SH OPTIONS
 .PP
-\fB\fC\-\-dir\fR|\fB\fC\-d\fR DIR
+\fB\fC\-\-settings\-dir\fR|\fB\fC\-s\fR DIR
 .br
 Override the environment variable:
-\fBLINKLORD\_DIR\fP
+\fBLINKLORD\_SETTINGS\_DIR\fP
 
 .PP
-\fB\fC\-\-settings\fR|\fB\fC\-s\fR FILE
+\fB\fC\-\-links\-dir\fR|\fB\fC\-d\fR DIR
 .br
 Override the environment variable:
-\fBLINKLORD\_SETTINGS\fP
+\fBLINKLORD\_LINKS\_DIR\fP
 
 .PP
 \fB\fC\-\-print\fR|\fB\fC\-p\fR FORMAT
@@ -45,6 +44,11 @@ replaced with URL and TITLE of the selected link.
 the FORMAT string will get evaluated when a link
 is selected.  \fB\fC%u\fR and \fB\fC%t\fR in FORMAT will be
 replaced with URL and TITLE of the selected link.
+
+.PP
+\fB\fC\-\-add\fR|\fB\fC\-a\fR LINK
+.br
+Add URL to the \fIdatabase\fP\&.
 
 .PP
 \fB\fC\-\-category\fR|\fB\fC\-c\fR CATEGORY
@@ -68,11 +72,6 @@ If set links will get added to the history file
 when the \fB\fC\-\-add\fR option is used.
 
 .PP
-\fB\fC\-\-add\fR|\fB\fC\-a\fR LINK
-.br
-Add URL to the \fIdatabase\fP\&.
-
-.PP
 \fB\fC\-\-help\fR|\fB\fC\-h\fR
 .br
 Show help and exit.
@@ -83,33 +82,35 @@ Show help and exit.
 Show version and exit.
 
 .SH environment variables
+.SS LINKLORD\_SETTINS\_DIR
 .PP
-The environment variable \fBLINKLORD\_DIR\fP
-contains the path to where the links are saved. It
-defaults to \fB\fCXDG\_CONFIG\_HOME/.config\fR, and can be
-overridden with the command line option \fB\fC\-\-dir\fR\&.
-By changing this variable one could have multiple
-databases for whatever that reason that might be.
+Path to where linklord store its configuration
+and log files
+(\fB\fCsettings\fR,\fB\fCactions\fR,\fB\fC\&.history\-\&l\fR,\fB\fC\&.history\-\&a\fR,\fB\fChistory\-c\fR,\fB\fC\&.log\fR).
+Defaults to \fB\fCXDG\_CONFIG\_HOME/.config/linklord\fR,
+and can be overridden with the command line option
+\fB\fC\-\-settings\-dir|\-s\fR\&.
 
+.SS LINKLORD\_LINKS\_DIR
 .PP
-\fBLINKLORD\_SETTINGS\fP contains the path to the
-settings file, it's value can be overridden with
-the command line option \fB\fC\-\-settings\fR\&. Defaults to:
-\fB\fCLINKLORD\_DIR/.settings\fR
+Where the links are stored, defaults to:
+\fB\fCLINKLORD\_SETTINGS\_DIR/links\fR, and can be
+overridden with the command line option
+\fB\fC\-\-links\-dir|\-d\fR\&.
 
 .SH files
 .PP
-If \fBLINKLORD\_DIR\fP doesn't exist when \fB\fClinklord\fR
-is executed, the directory will get created with a
-\fB\fC\&.settings\fR and \fB\fC\&.action\fR file with the default
-values set to all global variables.
+If \fBLINKLORD\_SETTINGS\_DIR\fP doesn't exist when
+\fB\fClinklord\fR is executed, the directory will get
+created with a \fB\fCsettings\fR and \fB\fCaction\fR file with
+the default values set for all global variables.
 
 .SH global variables
 .PP
 Every time \fB\fClinklord\fR is executed the
-\fBLINKLORD\_SETTINGS\fP will get sourced and any
-variables declared in the file will be used as
-global variables in \fB\fClinklord\fR\&.
+\fB\fCLINKLORD\_SETTINGS\_DIR/settings\fR will get sourced
+and any variables declared in the file will be
+used as global variables in \fB\fClinklord\fR\&.
 
 .PP
 \fBLINKLORD\_SETTINGS\fP
@@ -120,11 +121,6 @@ global variables in \fB\fClinklord\fR\&.
 .nf
 #!/bin/bash
 
-\_reportfile="$LINKLORD\_DIR/.log"
-\_actionfile="$LINKLORD\_DIR/.actions"
-\_history\_links="$LINKLORD\_DIR/.history\-l"
-\_history\_actions="$LINKLORD\_DIR/.history\-a"
-\_history\_categories="$LINKLORD\_DIR/.history\-c"
 \_history\_size=5
 \_spliton="linklord was here"
 \_char\_blacklist="[]<'"
@@ -141,33 +137,11 @@ global variables in \fB\fClinklord\fR\&.
 .fi
 .RE
 
-.SS \fB\fC\_reportfile\fR
-.PP
-Path to a file where \fB\fClinklord\fR stores the
-results from the last scan of a markdown document
-when [appending links]linklord wiki \- append
-links
-\[la]https://github.com/budlabs/linklord/wiki/50LL_append_links\[ra]\&.
-
-.SS \fB\fC\_actionfile\fR
-.PP
-Each line of this file is a action that can be
-chosen from a menu after a link is selected. see
-[actions wiki page][linklord wiki \- the actions]
-for more info.
-
-.SS \fB\fC\_history\_*\fR
-.PP
-These files contain the last selected item and is
-used to make sure that the last chosen items are
-the first selectable items in the menus.
-
 .SS \fB\fC\_history\_size\fR
 .PP
 How many selected links to remember, these will
 be listed before other links, files and
-directories. See [browser wiki page][linklord wiki
-\- the browser] for more info.
+directories.
 
 .SS \fB\fC\_spliton\fR
 .PP
@@ -197,14 +171,12 @@ be used. Tested with \fB\fCfzf\fR (terminal only),
 .SH the "database"
 .PP
 \fB\fClinklord\fR searches for links in all files that
-are not prefixed with a \fB\fC\&.\fR in \fBLINKLORD\_DIR\fP
-(\fIdefaults to \fB\fCXDG\_CONFIG\_HOME/linklord\fR, but can
-be set with environment variable or the
-commandline option \fB\fC\-d DIR\fR\fP). The links should be
-stored in markdown format like this:
+are not prefixed with a \fB\fC\&.\fR in
+\fBLINKLORD\_LINKS\_DIR\fP\&. The links are stored in
+markdown format like this:
 
 .PP
-\fBLINKLORD\_DIR/\fPfile1
+\fBLINKLORD\_DIR\fP/file1
 
 .PP
 .RS
@@ -260,17 +232,16 @@ prompt for the title:
 lets say we enter "title1". Now a prompt for
 \fBcategory\fP will get displayed together with a
 list of all \fBcategories\fP (\fIi.e files in
-LINKLORD\_DIR\fP). We can select one of the entries
-in the list or enter the name for a new category.
-if we assume the file \fB\fCbudlabs\fR (linklord wiki \-
-append links
-\[la]https://github.com/budlabs/linklord/wiki/50LL_append_links\[ra]) exist, and we select that. We would
-first get an error message since that already
-exist with a different URL. A new prompt to
-re\-enter the title, will be shown lets enter
-"MyTitle".  The category will be the same so no
-need to enter that twice. This title is valid and
-the file \fB\fCLINKLORD\_DIR/budlabs\fR will now look like
+LINKLORD\_LINKS\_DIR\fP). We can select one of the
+entries in the list or enter the name for a new
+category. if we assume the file \fB\fCbudlabs\fR exist,
+and we select that. We would first get an error
+message since that already exist with a different
+URL. A new prompt to re\-enter the title, will be
+shown lets enter "MyTitle".  The category will be
+the same so no need to enter that twice. This
+title is valid and the file
+\fB\fCLINKLORD\_LINKS\_DIR/budlabs\fR will now look like
 this:
 
 .PP
@@ -284,24 +255,17 @@ this:
 .fi
 .RE
 
-.PP
-Since \fIMyTitle\fP is in the example markdown file
-(linklord wiki \- append links
-\[la]https://github.com/budlabs/linklord/wiki/50LL_append_links\[ra]), it would get
-appended together with \fIyoutube\fP to the end of the
-file if we would execute \fB\fClinklord article.md\fR
-again.
-
 .SH the "browser"
 .PP
 If neither a markdown file or the \fB\fC\-\-add\fR option
 is used when \fB\fClinklord\fR is invoked it will instead
-display a menu with the links in \fBLINKLORD\_DIR\fP,
- it will also list all categories (files).
+display a menu with the links in
+\fBLINKLORD\_LINKS\_DIR\fP,  it will also list all
+categories (files).
 
 .PP
 If the following three files exist in
-\fBLINKLORD\_DIR\fP:
+\fBLINKLORD\_LINKS\_DIR\fP:
 
 .PP
 .RS
@@ -364,14 +328,15 @@ listed.
 .PP
 If a link is selected a new menu with actions
 will get displayed. Actions are defined in the
-file \fB\fCLINKLORD\_DIR/.actions\fR .  Or with the
-commandline options \fB\fC\-\-print FORMAT\fR or \fB\fC\-\-exec
-FORMAT\fR\&. When the commandline options are used the
-action menu will not be displayed. Each action
-consists of two parts: The action and a FORMAT:
+file \fB\fCLINKLORD\_SETTINGS\_DIR/actions\fR .  Or with
+the commandline options \fB\fC\-\-print FORMAT\fR or
+\fB\fC\-\-exec FORMAT\fR\&. When the commandline options are
+used the action menu will not be displayed. Each
+action consists of two parts: The action and a
+FORMAT:
 
 .PP
-\fB\fCLINKLORD\_DIR/.actions\fR
+\fB\fCLINKLORD\_SETTINGS\_DIR/actions\fR
 
 .PP
 .RS
@@ -407,10 +372,9 @@ expanded when the action is executed:
 .PP
 After the action is executed, the selected link
 will also get added to the history
-(\fB\fCBASHBUD\_DIR/.history\fR), the links in the history
-will get added to the top of the list next time
-\fB\fClinklord\fR is executed for browsing ([linklord
-wiki \- browsing]).
+(\fB\fCLINKLORD\_SETTINGS\_DIR/.history\-f\fR), the links in
+the history will get added to the top of the list
+next time \fB\fClinklord\fR is executed for browsing.
 
 .PP
 When a markdown file (*a file with either \fBmd\fP
@@ -422,7 +386,7 @@ database they will get appended to the markdown
 file.
 
 .PP
-\fBLINKLORD\_DIR\fP/budlabs
+\fBLINKLORD\_LINKS\_DIR\fP/budlabs
 
 .PP
 .RS
@@ -513,16 +477,7 @@ appended, everything below this line will get
 overwritten by \fBlinklord\fP every time this
 document is processed. The string \fBlinklord was
 here\fP, can be changed by setting the \fB\fC\_spliton\fR
-variable in [LINKLORD\_SETTINGS][linklord wiki \-
-configuring]
-
-.SH EXAMPLES
-.PP
-\fB\fClinklord \-\-help\fR display help
-.br
-\fB\fClinklord \-\-version\fR display version
-.br
-\fB\fCman linklord\fR show man page
+variable in \fB\fCLINKLORD\_SETTINGS\_DIR/settings\fR
 
 .SH ENVIRONMENT
 .PP
@@ -532,20 +487,20 @@ configuring]
 defaults to: $HOME/.config
 
 .PP
-\fB\fCLINKLORD\_DIR\fR
+\fB\fCLINKLORD\_SETTINGS\_DIR\fR
 
 .PP
 defaults to: $XDG\_CONFIG\_HOME/linklord
 
 .PP
-\fB\fCLINKLORD\_SETTINGS\fR
+\fB\fCLINKLORD\_LINKS\_DIR\fR
 
 .PP
-defaults to: $LINKLORD\_DIR/.settings
+defaults to: $LINKLORD\_SETTINGS\_DIR/links
 
 .SH DEPENDENCIES
 .PP
-\fB\fCbash\fR \fB\fCgawk\fR
+\fB\fCbash\fR \fB\fCgawk\fR \fB\fCsed\fR
 
 .PP
 budRich https://github.com/budlabs/linklord
@@ -553,4 +508,4 @@ budRich https://github.com/budlabs/linklord
 
 .SH SEE ALSO
 .PP
-bash(1), awk(1),
+dmenu(1), fzf(1), rofi(1),
