@@ -1,5 +1,5 @@
 .nh
-.TH LINKLORD 1 2020\-01\-07 Linux "User Manuals"
+.TH LINKLORD 1 2020\-01\-08 Linux "User Manuals"
 .SH NAME
 .PP
 \fB\fClinklord\fR \- a markdown flavored bookmark manager
@@ -82,7 +82,7 @@ Show help and exit.
 Show version and exit.
 
 .SH environment variables
-.SS LINKLORD\_SETTINS\_DIR
+.SS LINKLORD\_SETTINGS\_DIR
 .PP
 Path to where linklord store its configuration
 and log files
@@ -123,7 +123,7 @@ used as global variables in \fB\fClinklord\fR\&.
 
 \_history\_size=5
 \_spliton="linklord was here"
-\_char\_blacklist="[]<'"
+\_char\_blacklist="][<'"
 \_prefixlink=" " 
 \_prefixfile=" " 
 \_prefixfolder=" "
@@ -141,7 +141,8 @@ used as global variables in \fB\fClinklord\fR\&.
 .PP
 How many selected links to remember, these will
 be listed before other links, files and
-directories.
+directories. If value is \fB\fC0\fR, no limit will be
+used.
 
 .SS \fB\fC\_spliton\fR
 .PP
@@ -262,10 +263,10 @@ is used when \fB\fClinklord\fR is invoked it will instead
 display a menu with the links in
 \fBLINKLORD\_LINKS\_DIR\fP,  it will also list all
 categories (files).
-
-.PP
-If the following three files exist in
-\fBLINKLORD\_LINKS\_DIR\fP:
+.br
+budlabs github
+\[la]https://github.com/budlabs\[ra] If the following three files
+exist in \fBLINKLORD\_LINKS\_DIR\fP:
 
 .PP
 .RS
