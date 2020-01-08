@@ -22,7 +22,6 @@ main(){
   [[ -f $sd/settings ]] && . "$sd/settings"
 
   _history_links="$sd/.history-l"
-  _history_actions="$sd/.history-a"
   _history_categories="$sd/.history-c"
   _reportfile="$sd/.log"
   _actionfile="$sd/actions"

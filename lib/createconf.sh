@@ -19,7 +19,7 @@ cat << 'EOCONF' > "$trgdir/settings"
 
 _history_size=5
 _spliton="linklord was here"
-_char_blacklist="[]<'"
+_char_blacklist="][<'"
 _prefixlink=" " 
 _prefixfile=" " 
 _prefixfolder=" "
@@ -27,6 +27,13 @@ _menu_browse=(dmenu -p "select link: ")
 _menu_action=(dmenu -p "select action: ")
 _menu_add_title=(dmenu -p "title for url: ")
 _menu_add_category=(dmenu -p "store in category: ")
+
+# [[ -t 2 ]] && {
+#   _menu_browse=(fzf --prompt "select link: ")
+#   _menu_action=(fzf --prompt "select action: ")
+#   _menu_add_title=(fzf --prompt "title for url: ")
+#   _menu_add_category=(fzf --prompt "store in category: ")
+# }
 
 # shellcheck disable=SC2034
 EOCONF

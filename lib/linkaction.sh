@@ -13,16 +13,11 @@ linkaction() {
     [[ -f $_actionfile ]] \
       || { echo "print %u" > "$_actionfile" ;}
 
-    choice="$(
-      {
-        [[ -f "$_history_actions" ]] && cat "$_history_actions"
-        cat "$_actionfile"
-      } | awk '!a[$0]++' | "${_menu_action[@]}"
-    )"
+    choice="$(< "$_actionfile" "${_menu_action[@]}")"
 
     [[ -z $choice ]] && ERX no action selected
 
-    addtohistory "$choice" "$_history_actions"
+    addtohistory "$choice" "$_actionfile"
     __o["${choice%% *}"]=1
     printformat="${choice#* }"
 

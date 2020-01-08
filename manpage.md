@@ -58,7 +58,7 @@ Show version and exit.
 
 ## environment variables
 
-#### LINKLORD_SETTINS_DIR
+#### LINKLORD_SETTINGS_DIR
 
 Path to where linklord store its configuration
 and log files
@@ -216,9 +216,8 @@ is used when `linklord` is invoked it will instead
 display a menu with the links in
 **LINKLORD_LINKS_DIR**,  it will also list all
 categories (files).  
-
-If the following three files exist in
-**LINKLORD_LINKS_DIR**:  
+[budlabs github] If the following three files
+exist in **LINKLORD_LINKS_DIR**:  
 ```
 - `LINKLORD_DIR/`
     - `subdir/`
@@ -264,6 +263,10 @@ the links in that file will get listed. If a
 directory is selected all files, links and
 directories within the selected directory will get
 listed.
+
+[linklord was here]: #
+[budlabs github]: https://github.com/budlabs
+
 
 ### actions
 

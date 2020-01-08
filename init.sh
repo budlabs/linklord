@@ -3,8 +3,8 @@
 ___printversion(){
   
 cat << 'EOB' >&2
-linklord - version: 2020.01.07.4
-updated: 2020-01-07 by budRich
+linklord - version: 2020.01.08.0
+updated: 2020-01-08 by budRich
 EOB
 }
 
