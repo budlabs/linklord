@@ -87,7 +87,14 @@ Show version and exit.
 
 ## updates
 
+#### 2020.01.08.01
+
+Fixed some smaller issues with default settings file
+(`char_blacklist` had wrong value). And removed action
+history.
+
 #### 2020.01.07.01
+
 
 Initial release.
 

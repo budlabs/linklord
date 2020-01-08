@@ -3,8 +3,8 @@
 ___printversion(){
   
 cat << 'EOB' >&2
-linklord - version: 2020.01.07.4
-updated: 2020-01-07 by budRich
+linklord - version: 2020.01.08.4
+updated: 2020-01-08 by budRich
 EOB
 }
 
@@ -37,7 +37,6 @@ main(){
   [[ -f $sd/settings ]] && . "$sd/settings"
 
   _history_links="$sd/.history-l"
-  _history_actions="$sd/.history-a"
   _history_categories="$sd/.history-c"
   _reportfile="$sd/.log"
   _actionfile="$sd/actions"
@@ -176,7 +175,9 @@ addlink() {
       notify-send -u critical "$assert"
     fi
 
-    addlink "$url" --category "$category"
+    linklord --add "$url"           \
+             --category "$category" \
+             ${__o[add-to-history]:+--add-to-history}
     exit
   else
 
@@ -196,7 +197,7 @@ addlink() {
 }
 
 addtohistory() {
-  local name="$1" history="$2" limit="${3:-666}" tmpf
+  local name="$1" history="$2" limit="${3:-0}" tmpf
 
   if [[ -f $history ]]; then
 
@@ -204,7 +205,7 @@ addtohistory() {
 
     awk -v limit="${limit}" -v name="$name" '
       BEGIN {a[name]=1 ; print name}
-      !a[$0]++ && limit > ++i {print}
+      !a[$0]++ && (limit > ++i || limit == 0) {print}
     ' "$history" > "$tmpf"
 
     mv -f "$tmpf" "$history"
@@ -276,7 +277,7 @@ cat << 'EOCONF' > "$trgdir/settings"
 
 _history_size=5
 _spliton="linklord was here"
-_char_blacklist="[]<'"
+_char_blacklist="][<'"
 _prefixlink=" " 
 _prefixfile=" " 
 _prefixfolder=" "
@@ -284,6 +285,13 @@ _menu_browse=(dmenu -p "select link: ")
 _menu_action=(dmenu -p "select action: ")
 _menu_add_title=(dmenu -p "title for url: ")
 _menu_add_category=(dmenu -p "store in category: ")
+
+# [[ -t 2 ]] && {
+#   _menu_browse=(fzf --prompt "select link: ")
+#   _menu_action=(fzf --prompt "select action: ")
+#   _menu_add_title=(fzf --prompt "title for url: ")
+#   _menu_add_category=(fzf --prompt "store in category: ")
+# }
 
 # shellcheck disable=SC2034
 EOCONF
@@ -406,16 +414,11 @@ linkaction() {
     [[ -f $_actionfile ]] \
       || { echo "print %u" > "$_actionfile" ;}
 
-    choice="$(
-      {
-        [[ -f "$_history_actions" ]] && cat "$_history_actions"
-        cat "$_actionfile"
-      } | awk '!a[$0]++' | "${_menu_action[@]}"
-    )"
+    choice="$(< "$_actionfile" "${_menu_action[@]}")"
 
     [[ -z $choice ]] && ERX no action selected
 
-    addtohistory "$choice" "$_history_actions"
+    addtohistory "$choice" "$_actionfile"
     __o["${choice%% *}"]=1
     printformat="${choice#* }"
 
