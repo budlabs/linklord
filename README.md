@@ -87,12 +87,20 @@ Show version and exit.
 
 ## updates
 
-#### 2020.01.08.01
+#### 2020.01.08.20
 
-Fixed some smaller issues with default settings file
-(`char_blacklist` had wrong value). And removed action
-history. Updated bashbuds templates to copy readme to next
-branch correctly.
+When searching and appending links. Awk now breaks when
+`_spliton` string is found.
+
+#### 2020.01.08.19
+
+
+some minor bugfixes and documentatoin errors. FIXED: when a
+title didn't pass verification, the wrong command was used
+to prompt for a new menu. CHANGED: selected actions are not
+stored in a history file, instead the action file itself is
+updated. CHANGED: _history_limit can now be zero, which
+means no limit.
 
 #### 2020.01.07.01
 

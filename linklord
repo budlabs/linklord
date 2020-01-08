@@ -3,7 +3,7 @@
 ___printversion(){
   
 cat << 'EOB' >&2
-linklord - version: 2020.01.08.19
+linklord - version: 2020.01.08.20
 updated: 2020-01-08 by budRich
 EOB
 }
@@ -344,12 +344,16 @@ getlinks() {
   
   allfiles
 
-  awk -v reportfile="$_reportfile" -v targetfile="$targetfile" -F "[][]" '
+  awk -F "[][]"                    \
+      -v spliton="$_spliton"       \
+      -v reportfile="$_reportfile" \
+      -v targetfile="$targetfile"  \
+       '
 
     # first line not yaml start
     FNR == 1 && FILENAME == targetfile && $0 !~ /^---$/ {dashcount=2}
     /^---$/     {dashcount++}
-    /^```|~~~/ {codeblock++}
+    /^```|~~~/  {codeblock++}
     
     NF == 3 && dashcount < 1 {links[$2]=$0}
 
@@ -363,8 +367,10 @@ getlinks() {
       for (i=2;i<NF;i+=2) {
 
         # dont include referenced
-        if ($(i+1) ~ /^:/)
+        if ($(i+1) ~ /^:/) {
+          if ($i == spliton) {exit}
           delete found[$i]
+        }
 
         # dont include direct url []() or ref []:
         # dont bother with links not in the database
