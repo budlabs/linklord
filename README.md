@@ -91,7 +91,8 @@ Show version and exit.
 
 Fixed some smaller issues with default settings file
 (`char_blacklist` had wrong value). And removed action
-history.
+history. Updated bashbuds templates to copy readme to next
+branch correctly.
 
 #### 2020.01.07.01
 
@@ -103,6 +104,6 @@ Initial release.
 
 Perfect software, no known issues
 
-
-
-
+[linklord was here]: #
+[linklord wiki]: https://github.com/budlabs/linklord/wiki
+[linklord aur]: https://aur.archlinux.org/packages/linklord
