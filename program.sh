@@ -3,7 +3,7 @@
 ___printversion(){
   
 cat << 'EOB' >&2
-linklord - version: 2020.01.08.0
+linklord - version: 2020.01.08.2
 updated: 2020-01-08 by budRich
 EOB
 }
@@ -197,7 +197,7 @@ addlink() {
 }
 
 addtohistory() {
-  local name="$1" history="$2" limit="${3:-666}" tmpf
+  local name="$1" history="$2" limit="${3:-0}" tmpf
 
   if [[ -f $history ]]; then
 
@@ -205,7 +205,7 @@ addtohistory() {
 
     awk -v limit="${limit}" -v name="$name" '
       BEGIN {a[name]=1 ; print name}
-      !a[$0]++ && limit > ++i {print}
+      !a[$0]++ && (limit > ++i || limit == 0) {print}
     ' "$history" > "$tmpf"
 
     mv -f "$tmpf" "$history"

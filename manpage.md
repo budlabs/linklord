@@ -97,7 +97,7 @@ used as global variables in `linklord`.
 
 _history_size=5
 _spliton="linklord was here"
-_char_blacklist="[]<'"
+_char_blacklist="][<'"
 _prefixlink=" " 
 _prefixfile=" " 
 _prefixfolder=" "
@@ -114,7 +114,8 @@ _menu_add_category=(dmenu -p "store in category: ")
 
 How many selected links to remember, these will
 be listed before other links, files and
-directories.
+directories. If value is `0`, no limit will be
+used.
 
 ### `_spliton`
 

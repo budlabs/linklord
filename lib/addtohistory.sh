@@ -1,7 +1,7 @@
 #!/bin/bash
 
 addtohistory() {
-  local name="$1" history="$2" limit="${3:-666}" tmpf
+  local name="$1" history="$2" limit="${3:-0}" tmpf
 
   if [[ -f $history ]]; then
 
@@ -9,7 +9,7 @@ addtohistory() {
 
     awk -v limit="${limit}" -v name="$name" '
       BEGIN {a[name]=1 ; print name}
-      !a[$0]++ && limit > ++i {print}
+      !a[$0]++ && (limit > ++i || limit == 0) {print}
     ' "$history" > "$tmpf"
 
     mv -f "$tmpf" "$history"
